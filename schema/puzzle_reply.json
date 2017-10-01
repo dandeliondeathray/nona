@@ -1,0 +1,10 @@
+{
+  "namespace": "nona",
+  "type": "record",
+  "name": "PuzzleReply",
+  "fields": [
+    {"name": "user_id", "type": "string"},
+    {"name": "channel_id", "type": "string"},
+    {"name": "puzzle", "type": "string"}
+  ]
+}
