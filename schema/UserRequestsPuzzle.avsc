@@ -3,8 +3,8 @@
   "type": "record",
   "name": "UserRequestsPuzzle",
   "fields": [
-    {"name": "user_id", "type": "string"},
+    {"name": "user_id",    "type": "string"},
     {"name": "channel_id", "type": "string"},
-    {"name": "timestamp", "type": "long"}
+    {"name": "timestamp",  "type": "long"}
   ]
 }

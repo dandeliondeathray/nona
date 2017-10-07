@@ -21,7 +21,7 @@ def step_impl(context):
 
 @when(u'there is a puzzle response in nona_konsulatet_Chat')
 def step_impl(context):
-    puzzle_response = avro.encode({'user_id': 'U1', 'team': 'konsulatet', 'puzzle': 'PUSSGURKA'})
+    puzzle_response = context.schemas.encode('Chat', {'user_id': 'U1', 'team': 'konsulatet', 'text': 'PUSSGURKA'})
     context.metamorph.send_message(topic='nona_konsulatet_Chat', value=puzzle_response)
 
 

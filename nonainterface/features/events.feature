@@ -10,5 +10,5 @@ Feature: User interface against the microservices
 
   Scenario: Puzzle response
     Given a team konsulatet
-     When there is a puzzle response in nona_konsulatet_ChatMessage
+     When there is a puzzle response in nona_konsulatet_Chat
      Then a chat message is in the event queue
