@@ -44,4 +44,9 @@ def before_scenario(context, scenario):
     context.metamorph.await_reset_complete()
 
     context.nonainterface = NonaInterface(team='konsulatet')
+    context.nonainterface.start()
     context.chat_queue = ChatQueue(context.nonainterface.chat_events)
+
+
+def after_scenario(context, scenario):
+    context.nonainterface.stop()

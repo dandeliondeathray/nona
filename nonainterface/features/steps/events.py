@@ -28,4 +28,4 @@ def step_impl(context):
 
 @then(u'a chat message is in the event queue')
 def step_impl(context):
-    context.chat_queue.has({'user_id': 'U1', 'team': 'konsulatet', 'text': 'PUSSGURKA'}, timeout=2.0)
+    context.chat_queue.has(user_id='U1', team='konsulatet', text='PUSSGURKA', timeout=5.0)
