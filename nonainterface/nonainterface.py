@@ -1,12 +1,13 @@
 import queue
 from collections import namedtuple
-import io
 import avro.io
 import avro.schema
 import confluent_kafka
 import threading
 import base64
 import io
+import glob
+import os.path
 
 
 ChatMessage = namedtuple('ChatMessage', 'user_id team text')
@@ -61,14 +62,11 @@ class ChatConsumer:
 
 
 class NonaInterface:
-    def __init__(self, team, bootstrap_servers):
+    def __init__(self, team, bootstrap_servers, schemas):
         self.team = team
         self.chat_events = queue.Queue(maxsize=1000)
-        with open('../schema/Chat.avsc', 'r') as schema_file:
-            schema = avro.schema.Parse(schema_file.read())
-        with open('../schema/UserRequestsPuzzle.avsc', 'r') as schema_file:
-            self.user_req_puzzle_schema = avro.schema.Parse(schema_file.read())
-        self.chat_consumer = ChatConsumer(self.chat_events, schema, self.team, bootstrap_servers)
+        self.user_req_puzzle_schema = schemas.get('UserRequestsPuzzle')
+        self.chat_consumer = ChatConsumer(self.chat_events, schemas.get('Chat'), self.team, bootstrap_servers)
         self.producer = confluent_kafka.Producer({'bootstrap.servers': bootstrap_servers})
         self.user_req_puzzle_topic = 'nona_{team}_UserRequestsPuzzle'.format(team=self.team)
 
@@ -85,3 +83,25 @@ class NonaInterface:
         data = {'user_id': user_id, 'team': self.team, 'timestamp': 0}
         writer.write(data, encoder)
         self.producer.produce(self.user_req_puzzle_topic, out.getvalue())
+
+
+class AvroSchemas:
+    def __init__(self, schema_path):
+        schema_files = glob.glob(os.path.join(schema_path, '*.avsc'))
+        self._schemas = {}
+        for schema_file in schema_files:
+            with open(schema_file, 'r') as schema_handle:
+                schema = avro.schema.Parse(schema_handle.read())
+                self._schemas[schema.name] = schema
+
+    def encode(self, schema_name, fields):
+        schema = self._schemas[schema_name]
+        out = io.BytesIO()
+        writer = avro.io.DatumWriter(schema)
+        encoder = avro.io.BinaryEncoder(out)
+        writer.write(fields, encoder)
+        out_bytes = out.getvalue()
+        return base64.b64encode(out_bytes).decode('UTF-8')
+
+    def get(self, schema_name):
+        return self._schemas[schema_name]
