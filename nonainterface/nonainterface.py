@@ -6,6 +6,7 @@ import avro.schema
 import confluent_kafka
 import threading
 import base64
+import io
 
 
 ChatMessage = namedtuple('ChatMessage', 'user_id team text')
@@ -22,36 +23,29 @@ class ChatConsumer:
         self.team = team
 
     def start(self):
-        print("Starting ChatConsumer...")
         self._thread = threading.Thread(target=self.poll, name="ChatConsumer")
         self._thread.start()
 
     def stop(self):
-        print("Stopping ChatConsumer...")
         self._event.set()
         self._thread.join(timeout=3.0)
-        print("Stopped ChatConsumer.")
 
     def poll(self):
-        print("Starting a Confluent consumer")
         consumer = confluent_kafka.Consumer({'bootstrap.servers': 'localhost:9092',
                                              'group.id': self.consumer_group,
                                              'default.topic.config': {'auto.offset.reset': 'smallest'}})
         consumer.subscribe(["nona_{team}_Chat".format(team=self.team)])
         while not self._event.is_set():
             msg = consumer.poll(1)
-            print("Message poll:", msg)
             if msg is None:
                 continue
             if not msg.error():
                 binary_message = base64.b64decode(msg.value())
                 chat_message = self._decode_chat_event(binary_message)
-                print("Chat message:", chat_message)
                 self._queue.put(chat_message)
             elif msg.error().code() != confluent_kafka.KafkaError._PARTITION_EOF:
                 print(msg.error())
         consumer.close()
-        print("Stop event set.")
 
     def _decode_chat_event(self, data):
         """
@@ -71,7 +65,11 @@ class NonaInterface:
         self.chat_events = queue.Queue(maxsize=1000)
         with open('../schema/Chat.avsc', 'r') as schema_file:
             schema = avro.schema.Parse(schema_file.read())
+        with open('../schema/UserRequestsPuzzle.avsc', 'r') as schema_file:
+            self.user_req_puzzle_schema = avro.schema.Parse(schema_file.read())
         self.chat_consumer = ChatConsumer(self.chat_events, schema, self.team)
+        self.producer = confluent_kafka.Producer({'bootstrap.servers': 'localhost:9092'})
+        self.user_req_puzzle_topic = 'nona_{team}_UserRequestsPuzzle'.format(team=self.team)
 
     def start(self):
         self.chat_consumer.start()
@@ -80,4 +78,9 @@ class NonaInterface:
         self.chat_consumer.stop()
 
     def user_requests_puzzle(self, user_id):
-        pass
+        writer = avro.io.DatumWriter(writer_schema=self.user_req_puzzle_schema)
+        out = io.BytesIO()
+        encoder = avro.io.BinaryEncoder(out)
+        data = {'user_id': user_id, 'team': self.team, 'timestamp': 0}
+        writer.write(data, encoder)
+        self.producer.produce(self.user_req_puzzle_topic, out.getvalue())

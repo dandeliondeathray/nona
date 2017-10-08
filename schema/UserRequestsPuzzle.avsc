@@ -4,7 +4,7 @@
   "name": "UserRequestsPuzzle",
   "fields": [
     {"name": "user_id",    "type": "string"},
-    {"name": "channel_id", "type": "string"},
+    {"name": "team",       "type": "string"},
     {"name": "timestamp",  "type": "long"}
   ]
 }

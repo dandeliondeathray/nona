@@ -17,7 +17,6 @@ class AvroSchemas:
         for schema_file in schema_files:
             with open(schema_file, 'r') as schema_handle:
                 schema = avro.schema.Parse(schema_handle.read())
-                print(schema)
                 self._schemas[schema.name] = schema
 
     def encode(self, schema_name, fields):
