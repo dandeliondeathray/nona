@@ -13,7 +13,7 @@ ChatMessage = namedtuple('ChatMessage', 'user_id team text')
 
 
 class ChatConsumer:
-    def __init__(self, queue, schema, team):
+    def __init__(self, queue, schema, team, bootstrap_servers):
         self._queue = queue
         self._avro_reader = avro.io.DatumReader(writer_schema=schema)
         self._consumer = None
@@ -21,6 +21,7 @@ class ChatConsumer:
         self._thread = None
         self.consumer_group = "nonainterface"
         self.team = team
+        self._bootstrap_servers = bootstrap_servers
 
     def start(self):
         self._thread = threading.Thread(target=self.poll, name="ChatConsumer")
@@ -31,7 +32,7 @@ class ChatConsumer:
         self._thread.join(timeout=3.0)
 
     def poll(self):
-        consumer = confluent_kafka.Consumer({'bootstrap.servers': 'localhost:9092',
+        consumer = confluent_kafka.Consumer({'bootstrap.servers': self._bootstrap_servers,
                                              'group.id': self.consumer_group,
                                              'default.topic.config': {'auto.offset.reset': 'smallest'}})
         consumer.subscribe(["nona_{team}_Chat".format(team=self.team)])
@@ -60,15 +61,15 @@ class ChatConsumer:
 
 
 class NonaInterface:
-    def __init__(self, team=None):
-        self.team = team if team else 'konsulatet'
+    def __init__(self, team, bootstrap_servers):
+        self.team = team
         self.chat_events = queue.Queue(maxsize=1000)
         with open('../schema/Chat.avsc', 'r') as schema_file:
             schema = avro.schema.Parse(schema_file.read())
         with open('../schema/UserRequestsPuzzle.avsc', 'r') as schema_file:
             self.user_req_puzzle_schema = avro.schema.Parse(schema_file.read())
-        self.chat_consumer = ChatConsumer(self.chat_events, schema, self.team)
-        self.producer = confluent_kafka.Producer({'bootstrap.servers': 'localhost:9092'})
+        self.chat_consumer = ChatConsumer(self.chat_events, schema, self.team, bootstrap_servers)
+        self.producer = confluent_kafka.Producer({'bootstrap.servers': bootstrap_servers})
         self.user_req_puzzle_topic = 'nona_{team}_UserRequestsPuzzle'.format(team=self.team)
 
     def start(self):

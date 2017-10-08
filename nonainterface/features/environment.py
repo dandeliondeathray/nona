@@ -42,7 +42,7 @@ def before_scenario(context, scenario):
     context.metamorph.request_kafka_reset(["nona_konsulatet_UserRequestsPuzzle"])
     context.metamorph.await_reset_complete()
 
-    context.nonainterface = NonaInterface(team='konsulatet')
+    context.nonainterface = NonaInterface(team='konsulatet', bootstrap_servers='localhost:9092')
     context.nonainterface.start()
     context.chat_queue = ChatQueue(context.nonainterface.chat_events)
 
