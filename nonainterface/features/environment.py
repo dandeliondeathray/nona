@@ -5,6 +5,7 @@ import base64
 
 import pymetamorph.metamorph as metamorph
 from nonainterface import NonaInterface
+from testing import ChatQueue
 import avro.io
 import avro.schema
 
@@ -28,6 +29,9 @@ class AvroSchemas:
         out_bytes = out.getvalue()
         return base64.b64encode(out_bytes).decode('UTF-8')
 
+    def get(self, schema_name):
+        return self._schemas[schema_name]
+
 
 def before_all(context):
     context.metamorph = metamorph.Metamorph()
@@ -40,4 +44,4 @@ def before_scenario(context, scenario):
     context.metamorph.await_reset_complete()
 
     context.nonainterface = NonaInterface(team='konsulatet')
-
+    context.chat_queue = ChatQueue(context.nonainterface.chat_events)

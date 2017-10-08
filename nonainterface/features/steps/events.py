@@ -1,5 +1,6 @@
 from behave import *
 from pymetamorph.metamorph import MatchThese, OnTopic
+import base64
 
 
 @given(u'a team konsulatet')
@@ -27,4 +28,4 @@ def step_impl(context):
 
 @then(u'a chat message is in the event queue')
 def step_impl(context):
-    context.chat_queue.has(user_id='U1', team='konsulatet', puzzle='PUSSGURKA')
+    context.chat_queue.has({'user_id': 'U1', 'team': 'konsulatet', 'text': 'PUSSGURKA'}, timeout=2.0)
