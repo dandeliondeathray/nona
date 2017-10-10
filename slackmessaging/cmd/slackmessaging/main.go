@@ -1,7 +1,10 @@
 package main
 
-import "time"
+import "github.com/dandeliondeathray/nona/slackmessaging"
 
 func main() {
-	time.Sleep(100000)
+	go slackmessaging.StartProbes(24689)
+
+	chBlock := make(chan bool)
+	<-chBlock
 }

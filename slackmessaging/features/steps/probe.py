@@ -12,7 +12,7 @@ def step_impl(context):
 
 @when(u'an HTTP ready probe checks the service')
 def step_impl(context):
-    context.probe_response = probe.http_probe('http://localhost:24689/ready')
+    context.probe_response = probe.http_probe('http://localhost:24689/readiness')
 
 
 @then(u'an OK response is returned')
