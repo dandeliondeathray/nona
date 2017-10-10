@@ -1,16 +1,23 @@
 from behave import *
+from pymetamorph.metamorph import OnTopic
+from hamcrest import *
 
 
 @given(u'that the team is enabled')
 def step_impl(context):
-    raise NotImplementedError(u'STEP: Given that the team is enabled')
+    pass
 
 
 @when(u'a user is notified of the puzzle PUSSGURKA')
 def step_impl(context):
-    raise NotImplementedError(u'STEP: When a user is notified of the puzzle PUSSGURKA')
+    context.user_id = 'U1'
+    puzzle_response = context.schemas.encode('PuzzleNotification',
+                                             {'user_id': context.user_id, 'team': 'konsulatet', 'puzzle': 'PUSSGURKA'})
+    context.metamorph.send_message(topic='nona_PuzzleNotification', value=puzzle_response)
 
 
 @then(u'a chat message containing PUSSGURKA is sent to the same user')
 def step_impl(context):
-    raise NotImplementedError(u'STEP: Then a chat message containing PUSSGURKA is sent to the same user')
+    metamorph_message = context.metamorph.await_message(matcher=OnTopic('nona_konsulatet_Chat'))
+    m = context.avro.decode('Chat', metamorph_message['value'])
+    assert_that(m['user_id'], equal_to(context.user_id))

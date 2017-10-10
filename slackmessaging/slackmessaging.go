@@ -9,8 +9,14 @@ type ChatMessage struct {
 	Text string
 }
 
+// A PuzzleNotification is s
 type PuzzleNotification struct {
 	User   UserID
 	Team   Team
 	Puzzle string
+}
+
+// PuzzleNotificationEvent responds with the puzzle itself.
+func PuzzleNotificationEvent(p *PuzzleNotification) string {
+	return p.Puzzle
 }
