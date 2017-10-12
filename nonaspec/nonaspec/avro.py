@@ -30,7 +30,8 @@ class AvroSchemas:
         out_bytes = out.getvalue()
         return base64.b64encode(out_bytes).decode('UTF-8')
 
-    def decode(self, schema_name, data):
+    def decode(self, schema_name, encoded_data):
+        data = base64.b64decode(encoded_data)
         schema = self._schemas[schema_name]
         reader = avro.io.DatumReader(writer_schema=schema)
         decoder = avro.io.BinaryDecoder(io.BytesIO(data))

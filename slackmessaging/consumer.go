@@ -65,6 +65,7 @@ func (c *Consumer) consumeTopic(consumer sarama.Consumer, topic string) error {
 func (c *Consumer) forwardMessage(topic string, chMessages <-chan *sarama.ConsumerMessage) {
 	for m := range chMessages {
 		log.Println("Received message:", m)
+		c.chanConsumed <- ConsumedMessage{Topic: m.Topic, Value: m.Value}
 	}
 }
 

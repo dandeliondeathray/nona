@@ -20,10 +20,16 @@ func main() {
 	puzzleNotificationDecoder := slackmessaging.NewPuzzleNotificationDecoder(sm, codecs)
 
 	decoders := map[string]slackmessaging.Decoder{
-		"PuzzleNotification": puzzleNotificationDecoder}
+		"nona_PuzzleNotification": puzzleNotificationDecoder}
 
 	consumer := slackmessaging.NewConsumer()
 	chConsumed := consumer.ConsumedMessages()
+
+	producer, err := slackmessaging.NewProducer(codecs)
+	if err != nil {
+		log.Fatalf("Could not create producer: %v", err)
+	}
+	producer.Start(chChatMessage)
 
 	handler := slackmessaging.NewHandler(chConsumed, decoders)
 	handler.Start()

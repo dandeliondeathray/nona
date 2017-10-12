@@ -21,9 +21,9 @@ func (c ChatMessage) Encode(codecs *Codecs) ([]byte, error) {
 	}
 
 	native := make(map[string]interface{})
-	native["user_id"] = c.User
-	native["team"] = c.Team
-	native["text"] = c.Text
+	native["user_id"] = string(c.User)
+	native["team"] = string(c.Team)
+	native["text"] = string(c.Text)
 
 	binary, err := codec.BinaryFromNative(nil, native)
 	if err != nil {
@@ -64,29 +64,32 @@ func NewPuzzleNotificationDecoder(sm *SlackMessaging, codecs *Codecs) *PuzzleNot
 }
 
 func (p *PuzzleNotificationDecoder) Decode(value []byte) {
-	codec, err := p.codecs.ByName("PuzzleNotification")
+	codec, err := p.codecs.ByName("nona_PuzzleNotification")
 	if err != nil {
 		log.Println("Couldn't get codec:", err)
 		return
 	}
 
+	log.Println("Trying to decode binary value")
 	native, _, err := codec.NativeFromBinary(value)
 	if err != nil {
-		fmt.Println(err)
+		fmt.Printf("Could not decode Avro message as PuzzleNotification: %s", err)
+		return
 	}
+	log.Printf("Native: %v", native)
 	notification, ok := native.(map[string]interface{})
 	if !ok {
 		fmt.Println("Invalid PuzzleNotification message, after schema decode")
 		return
 	}
 
-	userID, ok := notification["user_id"].(UserID)
+	userID, ok := notification["user_id"].(string)
 	if !ok {
 		fmt.Println("Could not read 'user_id' as string")
 		return
 	}
 
-	team, ok := notification["team"].(Team)
+	team, ok := notification["team"].(string)
 	if !ok {
 		fmt.Println("Could not read 'team' as string")
 		return
@@ -98,6 +101,6 @@ func (p *PuzzleNotificationDecoder) Decode(value []byte) {
 		return
 	}
 
-	event := PuzzleNotification{User: userID, Team: team, Puzzle: puzzle}
+	event := PuzzleNotification{User: UserID(userID), Team: Team(team), Puzzle: puzzle}
 	p.sm.PuzzleNotificationEvent(event)
 }

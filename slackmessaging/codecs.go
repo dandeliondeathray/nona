@@ -23,12 +23,12 @@ func (c *Codecs) ByName(name string) (*goavro.Codec, error) {
 func LoadCodecsFromPath(path string) (*Codecs, error) {
 	codecs := &Codecs{make(map[string]*goavro.Codec)}
 
-	err := codecs.loadCodecFromFile(path, "PuzzleNotification.avsc", "PuzzleNotification")
+	err := codecs.loadCodecFromFile(path, "PuzzleNotification.avsc", "nona_PuzzleNotification")
 	if err != nil {
 		return nil, err
 	}
 
-	err = codecs.loadCodecFromFile(path, "ChatMessage.avsc", "ChatMessage")
+	err = codecs.loadCodecFromFile(path, "Chat.avsc", "Chat")
 	if err != nil {
 		return nil, err
 	}

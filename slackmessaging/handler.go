@@ -13,6 +13,7 @@ func (h *Handler) Start() {
 
 func (h *Handler) handleMessages() {
 	for message := range h.chConsumed {
+		log.Printf("Consumed message: %v", message)
 		decoder, ok := h.decoders[message.Topic]
 		if !ok {
 			log.Printf("No decoder for topic %s", message.Topic)
