@@ -1,6 +1,7 @@
 package plumber
 
 import (
+	"log"
 	"reflect"
 	"testing"
 
@@ -32,7 +33,7 @@ func TestEncodeDecode_AllStringFields_DecodedMatchesOriginal(t *testing.T) {
 		return
 	}
 
-	encoding := RecordEncoding{codec, reflect.TypeOf(StringRecord{})}
+	encoding := RecordEncoding{codec}
 
 	original := StringRecord{"value1", "value2"}
 
@@ -61,7 +62,7 @@ func TestEncodeDecode_IntField_DecodedMatchesOriginal(t *testing.T) {
 		return
 	}
 
-	encoding := RecordEncoding{codec, reflect.TypeOf(IntRecord{})}
+	encoding := RecordEncoding{codec}
 
 	original := IntRecord{42}
 
@@ -71,6 +72,48 @@ func TestEncodeDecode_IntField_DecodedMatchesOriginal(t *testing.T) {
 	encoding.Decode(encoded, &decoded)
 
 	if original != decoded {
-		t.Errorf("Original %v did not match decodede %v", original, decoded)
+		t.Errorf("Original %v did not match decoded %v", original, decoded)
+	}
+}
+
+func TestDecodeFromType_DecodeIntField_DecodedMatchesOriginal(t *testing.T) {
+	codec, err := goavro.NewCodec(`
+		{
+			"namespace": "plumber",
+			"type": "record",
+			"name": "IntTest",
+			"fields": [
+			  {"name": "field1",  "type": "int"}
+			]
+		}`)
+	if err != nil {
+		t.Errorf("Codec is nil: %v", err)
+		return
+	}
+
+	encoding := RecordEncoding{codec}
+
+	original := IntRecord{42}
+
+	encoded, _ := encoding.Encode(original)
+
+	typeOfIntRecordPtr := reflect.TypeOf(&IntRecord{})
+
+	decodedInterface, err := encoding.DecodeFromType(encoded, reflect.TypeOf(IntRecord{}))
+	if err != nil {
+		t.Fatalf("Could not decode IntRecord")
+	}
+
+	log.Println("Type of decodedInterface:", reflect.TypeOf(decodedInterface))
+
+	decoded, ok := decodedInterface.(typeOfIntRecordPtr)
+	if !ok {
+		t.Fatalf("Could not assert decoded to *IntRecord")
+	}
+
+	log.Println("Type of decoded:", reflect.TypeOf(decoded))
+
+	if original != *decoded {
+		t.Errorf("Original %v did not match decoded %v", original, *decoded)
 	}
 }

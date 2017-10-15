@@ -2,6 +2,7 @@ package plumber
 
 import (
 	"fmt"
+	"log"
 	"reflect"
 	"strings"
 
@@ -74,6 +75,18 @@ func (e *RecordEncoding) Decode(message []byte, v interface{}) error {
 	}
 
 	return nil
+}
+
+// DecodeFromType decodes a record, given only a reflect.Type and the bytes.
+func (e *RecordEncoding) DecodeFromType(message []byte, messageType reflect.Type) (interface{}, error) {
+	decodedValue := reflect.New(messageType)
+	decodedInterface := decodedValue.Interface()
+	err := e.Decode(message, decodedInterface)
+	if err != nil {
+		return nil, err
+	}
+	log.Printf("Decoded interface: %v", decodedInterface)
+	return decodedInterface, nil
 }
 
 func avroFieldName(structField reflect.StructField) string {

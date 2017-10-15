@@ -49,12 +49,11 @@ func (p *Plumber) Start(brokers []string) error {
 			return fmt.Errorf("Could not find schema name %s", topicConfig.SchemaName)
 		}
 		recordEncoding := NewRecordEncoding(codec)
-		log.Println("RecordEncoding", recordEncoding)
 
 		go decodeKafkaMessagesFromTopic(chConsumed, recordEncoding, topicConfig)
 
 		// Set up consumers for this topic, and send all messages via a channel to the decoder.
-		log.Println("Consume from ", topicConfig.Topic)
+		log.Println("Consume from", topicConfig.Topic)
 		p.consumeTopic(consumer, topicConfig.Topic, chConsumed)
 	}
 
@@ -78,15 +77,14 @@ func (p *Plumber) Start(brokers []string) error {
 func decodeKafkaMessagesFromTopic(chConsumed <-chan []byte, recordEncoding *RecordEncoding, topicConfig TopicConfiguration) {
 	chToService := reflect.ValueOf(topicConfig.ChMessage)
 	for consumed := range chConsumed {
-		v := reflect.New(topicConfig.ChMessageType)
-		err := recordEncoding.Decode(consumed, v)
+		decoded, err := recordEncoding.DecodeFromType(consumed, topicConfig.ChMessageType)
 		if err != nil {
 			log.Printf("Could not decode message as %v: %v", topicConfig.ChMessageType.Name(), consumed)
 			continue
 		}
-		log.Printf("Decoded message: %v", v)
+		log.Printf("Decoded message: %v", decoded)
 
-		chToService.Send(reflect.ValueOf(v))
+		chToService.Send(reflect.ValueOf(decoded))
 	}
 }
 
