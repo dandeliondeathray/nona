@@ -5,14 +5,83 @@ import (
 	"log"
 )
 
+// TopicConfiguration contains type information for each topic
+type TopicConfiguration struct {
+	ChMessageType Type
+	ChMessage     interface{}
+	SchemaName    string
+	Topic         string
+}
+
+// Configuration contains type information for each topic to consume from and produce to.
+type Configuration struct {
+	ConsumeTopics []TopicConfiguration
+	ProduceTopics []TopicConfiguration
+}
+
+// Service represents this micro service.
+type Service struct {
+	chPuzzleNotification chan PuzzleNotification
+	chChatMessage        chan ChatMessage
+}
+
+// NewService creates a SlackMessaging service.
+func NewService() Service {
+	return Service{make(chan PuzzleNotification, 100), make(chan ChatMessage, 100)}
+}
+
+// Start starts the SlackMessaging service.
+func (s *Service) Start() {
+	go handlePuzzleNotification(s.chPuzzleNotification, s.chChatMessage)
+}
+
+// Configuration returns information on what topics are consumed and produced, and what types
+// are expected from each topic.
+func (s Service) Configuration() Configuration {
+	consume := []TopicConfiguration{
+		TopicConfiguration{PuzzleNotification, s.chPuzzleNotification, "PuzzleNotification", "nona_PuzzleNotification"}}
+
+	produce := []TopicConfiguration{
+		TopicConfiguration{ChatMessage, s.chChatMessage, "Chat", "nona_konsulatet_Chat"}}
+
+	config := Configuration{ConsumeTopics: consume, ProduceTopics: produce}
+	return config
+}
+
+// UserID is a unique and stable identifier for a user.
 type UserID string
+
+// Team is an identifier for a Slack team.
 type Team string
 
+// ChatMessage contains a text message sent to a specific user in a team.
 type ChatMessage struct {
 	User UserID
 	Team Team
 	Text string
 }
+
+// A PuzzleNotification is sent in response to a user requesting the current/next puzzle.
+type PuzzleNotification struct {
+	User   UserID
+	Team   Team
+	Puzzle string
+}
+
+// HandlePuzzleNotification reponds to each puzzle notification with a chat message to the user.
+func handlePuzzleNotification(chPuzzleNotification <-chan PuzzleNotification, chChatMessage chan<- ChatMessage) {
+	for p := range chPuzzleNotification {
+		log.Printf("Puzzle notification received: %v", p)
+		chatMessage := ChatMessage{p.User, p.Team, p.Puzzle}
+		chChatMessage <- chatMessage
+	}
+}
+
+//
+//
+// Old code that I'm trying to replace
+//
+//
 
 func (c ChatMessage) Encode(codecs *Codecs) ([]byte, error) {
 	codec, err := codecs.ByName("Chat")
@@ -39,13 +108,6 @@ type SlackMessaging struct {
 
 func NewSlackMessaging(chChatMessage chan ChatMessage) *SlackMessaging {
 	return &SlackMessaging{chChatMessage}
-}
-
-// A PuzzleNotification is s
-type PuzzleNotification struct {
-	User   UserID
-	Team   Team
-	Puzzle string
 }
 
 // PuzzleNotificationEvent responds with the puzzle itself.
