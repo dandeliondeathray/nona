@@ -3,21 +3,10 @@ package slackmessaging
 import (
 	"fmt"
 	"log"
+	"reflect"
+
+	"github.com/dandeliondeathray/nona/plumber"
 )
-
-// TopicConfiguration contains type information for each topic
-type TopicConfiguration struct {
-	ChMessageType Type
-	ChMessage     interface{}
-	SchemaName    string
-	Topic         string
-}
-
-// Configuration contains type information for each topic to consume from and produce to.
-type Configuration struct {
-	ConsumeTopics []TopicConfiguration
-	ProduceTopics []TopicConfiguration
-}
 
 // Service represents this micro service.
 type Service struct {
@@ -37,14 +26,22 @@ func (s *Service) Start() {
 
 // Configuration returns information on what topics are consumed and produced, and what types
 // are expected from each topic.
-func (s Service) Configuration() Configuration {
-	consume := []TopicConfiguration{
-		TopicConfiguration{PuzzleNotification, s.chPuzzleNotification, "PuzzleNotification", "nona_PuzzleNotification"}}
+func (s Service) Configuration() plumber.Configuration {
+	consume := []plumber.TopicConfiguration{
+		plumber.TopicConfiguration{
+			ChMessageType: reflect.TypeOf(PuzzleNotification{}),
+			ChMessage:     s.chPuzzleNotification,
+			SchemaName:    "PuzzleNotification",
+			Topic:         "nona_PuzzleNotification"}}
 
-	produce := []TopicConfiguration{
-		TopicConfiguration{ChatMessage, s.chChatMessage, "Chat", "nona_konsulatet_Chat"}}
+	produce := []plumber.TopicConfiguration{
+		plumber.TopicConfiguration{
+			ChMessageType: reflect.TypeOf(ChatMessage{}),
+			ChMessage:     s.chChatMessage,
+			SchemaName:    "Chat",
+			Topic:         "nona_konsulatet_Chat"}}
 
-	config := Configuration{ConsumeTopics: consume, ProduceTopics: produce}
+	config := plumber.Configuration{ConsumeTopics: consume, ProduceTopics: produce}
 	return config
 }
 
@@ -56,16 +53,16 @@ type Team string
 
 // ChatMessage contains a text message sent to a specific user in a team.
 type ChatMessage struct {
-	User UserID
-	Team Team
-	Text string
+	User UserID `avro:"user_id"`
+	Team Team   `avro:"team"`
+	Text string `avro:"text"`
 }
 
 // A PuzzleNotification is sent in response to a user requesting the current/next puzzle.
 type PuzzleNotification struct {
-	User   UserID
-	Team   Team
-	Puzzle string
+	User   UserID `avro:"user_id"`
+	Team   Team   `avro:"team"`
+	Puzzle string `avro:"puzzle"`
 }
 
 // HandlePuzzleNotification reponds to each puzzle notification with a chat message to the user.
