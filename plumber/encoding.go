@@ -10,8 +10,12 @@ import (
 
 // RecordEncoding encodes and decodes Avro records.
 type RecordEncoding struct {
-	codec      *goavro.Codec
-	nativeType reflect.Type
+	codec *goavro.Codec
+}
+
+// NewRecordEncoding creates a record encoding
+func NewRecordEncoding(codec *goavro.Codec) *RecordEncoding {
+	return &RecordEncoding{codec}
 }
 
 // Encode a record as an Avro binary value.
