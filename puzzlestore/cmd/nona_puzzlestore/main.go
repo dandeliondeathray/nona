@@ -11,16 +11,16 @@ import (
 func main() {
 	schemasPath := os.Getenv("SCHEMA_PATH")
 
-	_, err := plumber.LoadCodecsFromPath(schemasPath)
+	codecs, err := plumber.LoadCodecsFromPath(schemasPath)
 	if err != nil {
 		log.Fatalf("Could not load codecs from path %s", schemasPath)
 	}
 
-	//service := slackmessaging.NewService()
-	//service.Start()
+	service := puzzlestore.NewService()
+	service.Start()
 
-	//plumber := plumber.NewPlumber(&service, codecs)
-	//plumber.Start([]string{"localhost:9092"})
+	plumber := plumber.NewPlumber(service, codecs)
+	plumber.Start([]string{"localhost:9092"})
 
 	go puzzlestore.StartProbes(24689)
 

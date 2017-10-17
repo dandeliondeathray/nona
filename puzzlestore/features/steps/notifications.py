@@ -35,7 +35,7 @@ def step_impl(context):
 def step_impl(context):
     metamorph_message = context.metamorph.await_message(matcher=OnTopic('nona_PuzzleNotification'))
     print(metamorph_message)
-    m = context.schemas.decode('Chat', metamorph_message['message'])
+    m = context.schemas.decode('PuzzleNotification', metamorph_message['message'])
     assert_that(m['user_id'], equal_to(context.user_id))
     assert_that(m['puzzle'], equal_to('PUSSGURKA'))
     assert_that(m['team'], equal_to('konsulatet'))
