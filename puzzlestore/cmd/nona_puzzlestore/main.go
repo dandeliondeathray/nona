@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"os"
+	"strings"
 
 	"github.com/dandeliondeathray/nona/plumber"
 	"github.com/dandeliondeathray/nona/puzzlestore"
@@ -10,6 +11,12 @@ import (
 
 func main() {
 	schemasPath := os.Getenv("SCHEMA_PATH")
+	brokerEnv := os.Getenv("KAFKA_BROKERS")
+	if brokerEnv == "" {
+		log.Fatalf("No KAFKA_BROKERS set!")
+	}
+	brokers := strings.Split(brokerEnv, ",")
+	log.Println("Kafka brokers:", brokers)
 
 	codecs, err := plumber.LoadCodecsFromPath(schemasPath)
 	if err != nil {
@@ -20,7 +27,7 @@ func main() {
 	service.Start()
 
 	plumber := plumber.NewPlumber(service, codecs)
-	plumber.Start([]string{"localhost:9092"})
+	plumber.Start(brokers)
 
 	go puzzlestore.StartProbes(24689)
 

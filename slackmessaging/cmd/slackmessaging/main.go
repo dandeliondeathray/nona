@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"os"
+	"strings"
 
 	"github.com/dandeliondeathray/nona/plumber"
 	"github.com/dandeliondeathray/nona/slackmessaging"
@@ -10,6 +11,11 @@ import (
 
 func main() {
 	schemasPath := os.Getenv("SCHEMA_PATH")
+	brokerEnv := os.Getenv("KAFKA_BROKERS")
+	if brokerEnv == "" {
+		log.Fatalf("KAFKA_BROKERS not set")
+	}
+	brokers := strings.Split(brokerEnv, ",")
 
 	codecs, err := plumber.LoadCodecsFromPath(schemasPath)
 	if err != nil {
@@ -20,7 +26,7 @@ func main() {
 	service.Start()
 
 	plumber := plumber.NewPlumber(&service, codecs)
-	plumber.Start([]string{"localhost:9092"})
+	plumber.Start(brokers)
 
 	go slackmessaging.StartProbes(24689)
 
