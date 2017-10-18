@@ -1,4 +1,5 @@
-FROM erikedin/nonaplumber as builder
+ARG PLUMBER_TAG=latest
+FROM erikedin/nonaplumber:${PLUMBER_TAG} as builder
 
 COPY . /go/src/github.com/dandeliondeathray/nona/puzzlestore
 RUN go get github.com/dandeliondeathray/nona/puzzlestore/cmd/nona_puzzlestore
