@@ -1,12 +1,12 @@
 from distutils.core import setup
 
 setup(
-    name='slackrest',
-    version='1.0.0',
-    packages=['slackrest'],
-    url='https://github.com/dandeliondeathray/niancat-micro.git',
-    license='GPL 3.0',
+    name='nonainterface',
+    version='0.1.0',
+    py_modules=['nonainterface'],
+    url='https://github.com/dandeliondeathray/nona',
+    license='Apache License 2.0',
     author='Erik Edin',
     author_email='',
-    description='A framework for interfacing a RESTful chat bot with Slack.'
+    description='A Python interface to the Nona micro service system.'
 )

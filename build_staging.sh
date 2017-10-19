@@ -5,7 +5,7 @@
 function exit_on_failure() {
     if [ $? -ne 0 ]; then
         echo "FAILED TO BUILD!"
-        exit $?
+        exit 1
     fi
 }
 
