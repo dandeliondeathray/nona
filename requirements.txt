@@ -1,0 +1,5 @@
+behave
+websockets
+avro-python3
+pyhamcrest
+requests
