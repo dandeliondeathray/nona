@@ -22,9 +22,8 @@ spec:
     spec:
       containers:
       - name: zookeeper
-        image: erikedin/kafka-arm:latest
-        command: ["/kafka/bin/zookeeper-server-start.sh"]
-        imagePullPolicy: Always
+        image: zookeeper
+        imagePullPolicy: IfNotPresent
         livenessProbe:
           tcpSocket:
             port: 2181
@@ -35,10 +34,3 @@ spec:
             port: 2181
           initialDelaySeconds: 20
           periodSeconds: 10
-        volumeMounts:
-        - name: zookeeper-config-vol
-          mountPath: /config
-      volumes:
-      - name: zookeeper-config-vol
-        configMap:
-          name: zookeeper-config

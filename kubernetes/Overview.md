@@ -25,7 +25,6 @@ integrate with the system.
 
 Current tasks
 -------------
-- Create the staging namespace
 - Modify the Kafka deployment for x86
 - Modify the Kafka deployment for the new cluster
 - Deployment for puzzlestore
@@ -38,3 +37,4 @@ Current tasks
 
 Completed tasks
 ---------------
+- Create the staging namespace
