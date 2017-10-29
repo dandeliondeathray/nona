@@ -21,7 +21,7 @@ spec:
         app: kafka-1
     spec:
       nodeSelector:
-        kubernetes.io/hostname: maia
+        kubernetes.io/hostname: angela
       containers:
       - name: kafka-1
         image: erikedin/kafka-arm:latest
