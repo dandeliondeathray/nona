@@ -8,3 +8,5 @@ RUN go install github.com/dandeliondeathray/nona/puzzlestore/cmd/nona_puzzlestor
 FROM golang:1.8.4-stretch
 
 COPY --from=builder /go/bin/nona_puzzlestore /app/nona_puzzlestore
+
+CMD [ "/app/nona_puzzlestore" ]
