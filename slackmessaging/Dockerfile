@@ -8,3 +8,5 @@ RUN go install github.com/dandeliondeathray/nona/slackmessaging/cmd/slackmessagi
 FROM golang:1.8.4-stretch
 
 COPY --from=builder /go/bin/slackmessaging /app/slackmessaging
+
+CMD ["/app/slackmessaging"]
