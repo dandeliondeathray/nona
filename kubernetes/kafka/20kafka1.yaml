@@ -24,8 +24,8 @@ spec:
         kubernetes.io/hostname: angela
       containers:
       - name: kafka-1
-        image: erikedin/kafka-arm:latest
-        command: ["/kafka/bin/kafka-server-start.sh"]
+        image: erikedin/kafka:latest
+        command: ["/kafka/bin/kafka-server-start.sh", "/config/server.properties"]
         imagePullPolicy: Always
         livenessProbe:
           tcpSocket:
