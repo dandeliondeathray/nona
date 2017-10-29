@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"path/filepath"
 
 	"github.com/linkedin/goavro"
@@ -32,10 +33,13 @@ func LoadCodecsFromPath(path string) (*Codecs, error) {
 	if err != nil {
 		return nil, err
 	}
+	log.Println("Schema files:", matches)
 
 	for i := range matches {
 		match := matches[i]
-		codecs.loadCodecFromFile(path, match)
+		if err = codecs.loadCodecFromFile(path, match); err != nil {
+			log.Println("Failed to load schema in file", match, "because", err)
+		}
 	}
 
 	return codecs, nil
@@ -46,7 +50,7 @@ type schemaName struct {
 }
 
 func (c *Codecs) loadCodecFromFile(path, file string) error {
-	schema, err := ioutil.ReadFile(filepath.Join(path, file))
+	schema, err := ioutil.ReadFile(file)
 	if err != nil {
 		return err
 	}
@@ -60,6 +64,7 @@ func (c *Codecs) loadCodecFromFile(path, file string) error {
 	if err != nil {
 		return err
 	}
+	log.Println("Loaded codec:", schemaName.Name)
 
 	c.codecs[schemaName.Name] = codec
 	return nil

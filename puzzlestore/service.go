@@ -1,6 +1,7 @@
 package puzzlestore
 
 import (
+	"log"
 	"reflect"
 
 	"github.com/dandeliondeathray/nona/plumber"
@@ -13,7 +14,9 @@ type Service struct {
 }
 
 func (s *Service) handleRequests() {
+	log.Println("Start handling requests.")
 	for req := range s.chRequests {
+		log.Println("User requested puzzle:", req)
 		s.chNotifications <- PuzzleNotification{User: req.User, Team: req.Team, Puzzle: "PUSSGURKA"}
 	}
 }

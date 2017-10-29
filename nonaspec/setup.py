@@ -1,12 +1,12 @@
-from distutils.core import setup
-
+from setuptools import setup, find_packages
 setup(
-    name='nonaspec',
-    version='1.0.0',
-    packages=['nonaspec'],
-    url='https://github.com/dandeliondeathray/nona/nonaspec',
-    license='GPL 3.0',
-    author='Erik Edin',
-    author_email='',
-    description='Helpers for executable specifications.'
+    name="nonaspec",
+    version="0.1",
+    packages=find_packages(),
+
+    author="Erik Edin",
+    author_email="erikedin@users.noreply.github.com",
+    description="Nonaspec is used in acceptance testing of Nona.",
+    license="Apache License 2.0",
+    url="https://github.com/dandeliondeathray/nona/nonaspec"
 )

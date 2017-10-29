@@ -1,0 +1,28 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: nonaacceptance
+spec:
+  template:
+    metadata:
+      name: nonaacceptance
+    spec:
+      containers:
+      - name: nonaacceptance
+        image: erikedin/nonaacceptance
+        command: ["behave", "-t", "~wip"]
+        imagePullPolicy: Always
+        env:
+        - name: SCHEMA_PATH
+          value: /schema
+        - name: KAFKA_BROKERS
+          value: kafka-1.kafka
+        volumeMounts:
+        - name: nona-schema-vol
+          mountPath: /schema
+      volumes:
+      - name: nona-schema-vol
+        configMap:
+          name: nona-schema
+      restartPolicy: Never
+  backoffLimit: 0

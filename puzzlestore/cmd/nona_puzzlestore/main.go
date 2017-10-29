@@ -27,7 +27,9 @@ func main() {
 	service.Start()
 
 	plumber := plumber.NewPlumber(service, codecs)
-	plumber.Start(brokers)
+	if err = plumber.Start(brokers); err != nil {
+		log.Fatalf("Could not start plumber: %s", err)
+	}
 
 	go puzzlestore.StartProbes(24689)
 

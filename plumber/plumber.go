@@ -23,7 +23,7 @@ func NewPlumber(service Service, codecs *Codecs) *Plumber {
 // Start creates producers and consumers against the Kafka message queue, and sets up Avro
 // encoders and decoders for the messages.
 func (p *Plumber) Start(brokers []string) error {
-
+	log.Println("Plumber: Starting with brokers:", brokers)
 	kafkaConfig := sarama.NewConfig()
 	consumer, err := sarama.NewConsumer(brokers, kafkaConfig)
 	if err != nil {
@@ -41,6 +41,7 @@ func (p *Plumber) Start(brokers []string) error {
 
 	for i := range serviceConfig.ConsumeTopics {
 		topicConfig := serviceConfig.ConsumeTopics[i]
+		log.Println("Trying to consume topic", topicConfig.Topic)
 		chConsumed := make(chan []byte, 100)
 
 		// Set up decoding of messages from this topic.
@@ -59,6 +60,7 @@ func (p *Plumber) Start(brokers []string) error {
 
 	for i := range serviceConfig.ProduceTopics {
 		topicConfig := serviceConfig.ProduceTopics[i]
+		log.Println("Trying to produce to topic", topicConfig.Topic)
 
 		// Set up encoding of message to this topic
 		codec, err := p.codecs.ByName(topicConfig.SchemaName)

@@ -1,1 +1,3 @@
 behave
+avro-python3
+confluent-kafka

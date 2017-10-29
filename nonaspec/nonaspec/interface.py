@@ -1,6 +1,6 @@
 """
-nonainterface.testing contains code for helping with the testing of the Nona system through nonainterface, as well as
-nonainterface itself.
+nonaspec.interface contains code for helping with the testing of the Nona system through
+nonainterface, as well as nonainterface itself.
 """
 
 import queue
