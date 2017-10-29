@@ -1,0 +1,42 @@
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: nonaslack
+spec:
+  template:
+    metadata:
+      labels:
+        app: nona
+        service: nonaslack
+    spec:
+      containers:
+      - name: nonaslack
+        image: erikedin/nonaslack:staging
+        imagePullPolicy: Always
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 24689
+          initialDelaySeconds: 60
+          timeoutSeconds: 1
+        readinessProbe:
+          httpGet:
+            path: /readiness
+            port: 24689
+          initialDelaySeconds: 60
+          timeoutSeconds: 1
+        env:
+        - name: NOTIFICATION_CHANNEL
+          value: betacat
+        - name: SLACK_API_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: slack-token
+              key: nona.token
+        volumeMounts:
+        - name: nona-schema-vol
+          mountPath: /schema
+      volumes:
+      - name: nona-schema-vol
+        configMap:
+          name: nona-schema
