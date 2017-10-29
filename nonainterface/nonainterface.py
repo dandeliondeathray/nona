@@ -43,8 +43,9 @@ class ChatConsumer:
             if msg is None:
                 continue
             if not msg.error():
-                print("Message:", msg)
-                binary_message = base64.b64decode(msg.value())
+                print("Message:", msg.value())
+                #binary_message = base64.b64decode(msg.value())
+                binary_message = msg.value()
                 chat_message = self._decode_chat_event(binary_message)
                 print("Chat event:", chat_message)
                 self._queue.put(chat_message)

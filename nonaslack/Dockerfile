@@ -1,4 +1,5 @@
-FROM python:3.6.1
+ARG INTERFACE_TAG=staging
+FROM erikedin/nonainterface:${INTERFACE_TAG}
 
 ENV PYTHONUNBUFFERED=0
 

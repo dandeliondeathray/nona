@@ -33,6 +33,10 @@ spec:
             secretKeyRef:
               name: slack-token
               key: nona.token
+        - name: SCHEMA_PATH
+          value: /schema
+        - name: KAFKA_BROKERS
+          value: kafka-1.kafka:9092
         volumeMounts:
         - name: nona-schema-vol
           mountPath: /schema
