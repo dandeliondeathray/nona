@@ -1,0 +1,10 @@
+{
+  "namespace": "nona",
+  "type": "record",
+  "name": "PuzzleRequired",
+  "fields": [
+    {"name": "user_id", "type": "string"},
+    {"name": "team",    "type": "string"},
+    {"name": "index",   "type": "long"}
+  ]
+}

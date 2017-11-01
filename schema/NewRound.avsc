@@ -1,0 +1,9 @@
+{
+  "namespace": "nona",
+  "type": "record",
+  "name": "NewRound",
+  "fields": [
+    {"name": "team", "type": "string"},
+    {"name": "seed", "type": "long"}
+  ]
+}
