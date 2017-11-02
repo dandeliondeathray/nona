@@ -12,12 +12,12 @@ if [ "${TAG}" == "" ]; then
     TAG="dev"
 fi
 
-sudo docker build -t erikedin/nonainterface:${TAG} nonainterface
+sudo docker build -t erikedin/nonainterface:${TAG} service/nonainterface
 exit_on_failure
 
-sudo docker build -t erikedin/nonaplumber:${TAG} plumber
+sudo docker build -t erikedin/nonaplumber:${TAG} service/plumber
 exit_on_failure
-sudo docker build -t erikedin/nonaslackmessaging:${TAG} --build-arg PLUMBER_TAG=${TAG} slackmessaging
+sudo docker build -t erikedin/nonaslackmessaging:${TAG} --build-arg PLUMBER_TAG=${TAG} service/slackmessaging
 exit_on_failure
-sudo docker build -t erikedin/nonapuzzlestore:${TAG} --build-arg PLUMBER_TAG=${TAG} puzzlestore
+sudo docker build -t erikedin/nonapuzzlestore:${TAG} --build-arg PLUMBER_TAG=${TAG} service/puzzlestore
 exit_on_failure
