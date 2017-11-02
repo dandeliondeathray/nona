@@ -5,8 +5,8 @@ import (
 	"os"
 	"strings"
 
-	"github.com/dandeliondeathray/nona/plumber"
-	"github.com/dandeliondeathray/nona/slackmessaging"
+	"github.com/dandeliondeathray/nona/service/plumber"
+	"github.com/dandeliondeathray/nona/service/slackmessaging"
 )
 
 func main() {

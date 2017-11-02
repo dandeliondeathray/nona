@@ -1,9 +1,9 @@
 ARG PLUMBER_TAG=latest
 FROM erikedin/nonaplumber:${PLUMBER_TAG} as builder
 
-COPY . /go/src/github.com/dandeliondeathray/nona/puzzlestore
-RUN go get github.com/dandeliondeathray/nona/puzzlestore/cmd/nona_puzzlestore
-RUN go install github.com/dandeliondeathray/nona/puzzlestore/cmd/nona_puzzlestore
+COPY . /go/src/github.com/dandeliondeathray/nona/service/puzzlestore
+RUN go get github.com/dandeliondeathray/nona/service/puzzlestore/cmd/nona_puzzlestore
+RUN go install github.com/dandeliondeathray/nona/service/puzzlestore/cmd/nona_puzzlestore
 
 FROM golang:1.8.4-stretch
 

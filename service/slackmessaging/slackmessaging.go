@@ -4,7 +4,7 @@ import (
 	"log"
 	"reflect"
 
-	"github.com/dandeliondeathray/nona/plumber"
+	"github.com/dandeliondeathray/nona/service/plumber"
 )
 
 // Service represents this micro service.

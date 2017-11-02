@@ -1,9 +1,9 @@
 ARG PLUMBER_TAG=latest
 FROM erikedin/nonaplumber:${PLUMBER_TAG} as builder
 
-COPY . /go/src/github.com/dandeliondeathray/nona/slackmessaging
-RUN go get github.com/dandeliondeathray/nona/slackmessaging/cmd/slackmessaging
-RUN go install github.com/dandeliondeathray/nona/slackmessaging/cmd/slackmessaging
+COPY . /go/src/github.com/dandeliondeathray/nona/service/slackmessaging
+RUN go get github.com/dandeliondeathray/nona/service/slackmessaging/cmd/slackmessaging
+RUN go install github.com/dandeliondeathray/nona/service/slackmessaging/cmd/slackmessaging
 
 FROM golang:1.8.4-stretch
 
