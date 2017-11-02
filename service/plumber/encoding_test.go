@@ -97,8 +97,6 @@ func TestDecodeFromType_DecodeIntField_DecodedMatchesOriginal(t *testing.T) {
 
 	encoded, _ := encoding.Encode(original)
 
-	typeOfIntRecordPtr := reflect.TypeOf(&IntRecord{})
-
 	decodedInterface, err := encoding.DecodeFromType(encoded, reflect.TypeOf(IntRecord{}))
 	if err != nil {
 		t.Fatalf("Could not decode IntRecord")
@@ -106,7 +104,7 @@ func TestDecodeFromType_DecodeIntField_DecodedMatchesOriginal(t *testing.T) {
 
 	log.Println("Type of decodedInterface:", reflect.TypeOf(decodedInterface))
 
-	decoded, ok := decodedInterface.(typeOfIntRecordPtr)
+	decoded, ok := decodedInterface.(*IntRecord)
 	if !ok {
 		t.Fatalf("Could not assert decoded to *IntRecord")
 	}
