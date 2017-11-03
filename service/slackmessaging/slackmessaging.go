@@ -1,6 +1,7 @@
 package slackmessaging
 
 import (
+	"fmt"
 	"log"
 	"reflect"
 
@@ -11,11 +12,12 @@ import (
 type Service struct {
 	chPuzzleNotification chan *PuzzleNotification
 	chChatMessage        chan ChatMessage
+	teams                []string
 }
 
 // NewService creates a SlackMessaging service.
-func NewService() Service {
-	return Service{make(chan *PuzzleNotification, 100), make(chan ChatMessage, 100)}
+func NewService(teams []string) Service {
+	return Service{make(chan *PuzzleNotification, 100), make(chan ChatMessage, 100), teams}
 }
 
 // Start starts the SlackMessaging service.
@@ -33,12 +35,14 @@ func (s Service) Configuration() plumber.Configuration {
 			SchemaName:    "PuzzleNotification",
 			Topic:         "nona_PuzzleNotification"}}
 
-	produce := []plumber.TopicConfiguration{
-		plumber.TopicConfiguration{
+	produce := make([]plumber.TopicConfiguration, len(s.teams))
+	for i := range s.teams {
+		produce[i] = plumber.TopicConfiguration{
 			ChMessageType: reflect.TypeOf(ChatMessage{}),
 			ChMessage:     s.chChatMessage,
 			SchemaName:    "Chat",
-			Topic:         "nona_konsulatet_Chat"}}
+			Topic:         fmt.Sprintf("nona_%s_Chat", s.teams[i])}
+	}
 
 	config := plumber.Configuration{ConsumeTopics: consume, ProduceTopics: produce}
 	return config
