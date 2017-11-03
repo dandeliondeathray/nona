@@ -14,7 +14,8 @@ def before_scenario(context, scenario):
     context.metamorph.request_kafka_reset(['nona_konsulatet_Chat'])
     context.metamorph.await_reset_complete()
 
-    context.slackmessaging_process = pymetamorph.process.start(go='bin/slackmessaging')
+    env = {'SCHEMA_PATH': '../schema', 'KAFKA_BROKERS': 'localhost:9092'}
+    context.slackmessaging_process = pymetamorph.process.start(go='bin/slackmessaging', env=env)
 
 
 def after_scenario(context, scenario):
