@@ -1,11 +1,18 @@
+import time
+
 import pymetamorph.metamorph as metamorph
 import pymetamorph.process
-
 import nonaspec.avro
 
 
 def before_all(context):
     context.schemas = nonaspec.avro.AvroSchemas('../schema')
+    context.metamorph_process = pymetamorph.process.start(go='bin/metamorph')
+    time.sleep(1)
+
+
+def after_all(context):
+    context.metamorph_process.stop()
 
 
 def before_scenario(context, scenario):
