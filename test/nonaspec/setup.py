@@ -8,5 +8,5 @@ setup(
     author_email="erikedin@users.noreply.github.com",
     description="Nonaspec is used in acceptance testing of Nona.",
     license="Apache License 2.0",
-    url="https://github.com/dandeliondeathray/nona/nonaspec"
+    url="https://github.com/dandeliondeathray/nona/test/nonaspec"
 )
