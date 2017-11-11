@@ -11,8 +11,8 @@ from nonainterface import NonaInterface, AvroSchemas
 import websockets
 
 
-class Nonastaging:
-    """Nonastaging implements the entire micro service."""
+class NonaStaging:
+    """NonaStaging implements the entire micro service."""
     def __init__(self, loop, bootstrap_servers, schema_path):
         self.loop = loop
         schemas = AvroSchemas(schema_path)
@@ -71,8 +71,24 @@ class Nonastaging:
         self.loop.run_until_complete(start_server)
         self.loop.run_forever()
 
+class NonaStagingService:
+    def __init__(self, brokers, schema_path):
+        self._brokers = brokers
+        self._schema_path = schema_path
+        self.loop = None
+        self._nonastaging = None
+
+    def stop(self):
+        self.loop.call_soon_threadsafe(self.loop.stop)
+        self._nonastaging.stop_chat_event_reader()
+
+    def start(self):
+        self.loop = asyncio.get_event_loop()
+        self.nonastaging = NonaStaging(self.loop, self._brokers, self._schema_path)
+        self.nonastaging.run_forever()
+
 if __name__ == "__main__":
-    myloop = asyncio.get_event_loop()
-    nonastaging = Nonastaging(myloop, os.environ['KAFKA_BROKERS'], os.environ['SCHEMA_PATH'])
-    nonastaging.run_forever()
-    nonastaging.stop_chat_event_reader()
+    my_brokers = os.environ['KAFKA_BROKERS']
+    my_schema_path = os.environ['SCHEMA_PATH']
+    service = NonaStagingService(my_brokers, my_schema_path)
+    service.start()

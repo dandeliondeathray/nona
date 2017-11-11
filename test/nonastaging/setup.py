@@ -3,7 +3,7 @@ setup(
     name="nonastaging",
     version="0.1",
     packages=find_packages(),
-    scripts=['nonastaging.py'],
+    py_modules=['nonastaging', 'nonastagingclient'],
 
     author="Erik Edin",
     description="Nonastaging is a WebSocket/JSON interface to Nona.",
