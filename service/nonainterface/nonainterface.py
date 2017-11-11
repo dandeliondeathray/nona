@@ -73,8 +73,6 @@ class NonaInterface:
         self.chat_consumer = ChatConsumer(self.chat_events, schemas.get('Chat'), self.team, bootstrap_servers)
         self.producer = confluent_kafka.Producer({'bootstrap.servers': bootstrap_servers})
         self.user_req_puzzle_topic = 'nona_UserRequestsPuzzle'
-        print("Bootstrap server:", bootstrap_servers)
-        print("UserRequestPuzzle topic", self.user_req_puzzle_topic)
 
     def start(self):
         self.chat_consumer.start()
@@ -83,7 +81,6 @@ class NonaInterface:
         self.chat_consumer.stop()
 
     def user_requests_puzzle(self, user_id):
-        print("User {} requests puzzle".format(user_id))
         writer = avro.io.DatumWriter(writer_schema=self.user_req_puzzle_schema)
         out = io.BytesIO()
         encoder = avro.io.BinaryEncoder(out)

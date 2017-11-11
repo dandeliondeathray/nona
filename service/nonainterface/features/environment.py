@@ -1,16 +1,23 @@
 import pymetamorph.metamorph as metamorph
+import pymetamorph.process
 from nonainterface import NonaInterface, AvroSchemas
-from testing import ChatQueue
+from nonaspec.interface import ChatQueue
+import time
 
 
 def before_all(context):
+    context.metamorph_process = pymetamorph.process.start(go='bin/metamorph')
+    time.sleep(1)
     context.metamorph = metamorph.Metamorph()
     context.metamorph.connect()
     context.schemas = AvroSchemas("../schema")
 
 
+def after_all(context):
+    context.metamorph_process.stop()
+
 def before_scenario(context, scenario):
-    context.metamorph.request_kafka_reset(["nona_konsulatet_UserRequestsPuzzle"])
+    context.metamorph.request_kafka_reset(["nona_UserRequestsPuzzle"])
     context.metamorph.await_reset_complete()
 
     schemas = AvroSchemas('../schema')

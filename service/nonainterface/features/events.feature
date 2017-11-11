@@ -6,9 +6,8 @@ Feature: User interface against the microservices
   Scenario: A user requests a puzzle
     Given a team konsulatet
      When a user requests a puzzle
-     Then a UserRequestsPuzzle is sent to topic nona_konsulatet_UserRequestsPuzzle
+     Then a UserRequestsPuzzle is sent to topic nona_UserRequestsPuzzle
 
-  @wip
   Scenario: Puzzle response
     Given a team konsulatet
      When there is a puzzle response in nona_konsulatet_Chat

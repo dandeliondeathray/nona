@@ -13,10 +13,10 @@ def step_impl(context):
     context.nonainterface.user_requests_puzzle(user_id='U1')
 
 
-@then(u'a UserRequestsPuzzle is sent to topic nona_konsulatet_UserRequestsPuzzle')
+@then(u'a UserRequestsPuzzle is sent to topic nona_UserRequestsPuzzle')
 def step_impl(context):
     # TODO: Match against user id and team
-    match_message = MatchThese(OnTopic('nona_konsulatet_UserRequestsPuzzle'))
+    match_message = MatchThese(OnTopic('nona_UserRequestsPuzzle'))
     context.metamorph.await_message(matcher=match_message)
 
 
