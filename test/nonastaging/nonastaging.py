@@ -23,13 +23,14 @@ class NonaStaging:
     def read_chat_events(self):
         while True:
             chat_event = self._nona.chat_events.get(block=True)
+            print("Read chat event from nona:", chat_event)
             if chat_event is None:
                 break
             self.loop.call_soon_threadsafe(self.send_chat_event, chat_event)
 
     def stop_chat_event_reader(self):
         self._nona.chat_events.put(None)
-        self._chat_event_reader.join()
+        #self._chat_event_reader.join()
 
     @asyncio.coroutine
     def send_chat_event(self, chat_event):
@@ -53,13 +54,14 @@ class NonaStaging:
     def read_commands(self, websocket):
         while True:
             msg = yield from websocket.recv()
-            self.loop.call_soon(self.handle_command, msg)
+            print("Read command:", msg)
+            yield from self.handle_command(msg)
 
     @asyncio.coroutine
     def add_client(self, websocket, _path):
         print("New connection")
         self._clients.append(websocket)
-        self.loop.call_soon(self.read_commands, websocket)
+        self.read_commands(websocket)
 
     def run_forever(self):
         """Start the event loop and only return when it is stopped."""
@@ -83,9 +85,9 @@ class NonaStagingService:
         self._nonastaging.stop_chat_event_reader()
 
     def start(self):
-        self.loop = asyncio.get_event_loop()
-        self.nonastaging = NonaStaging(self.loop, self._brokers, self._schema_path)
-        self.nonastaging.run_forever()
+        self.loop = asyncio.new_event_loop()
+        self._nonastaging = NonaStaging(self.loop, self._brokers, self._schema_path)
+        self._nonastaging.run_forever()
 
 if __name__ == "__main__":
     my_brokers = os.environ['KAFKA_BROKERS']

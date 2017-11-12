@@ -1,6 +1,7 @@
 from behave import *
 import pymetamorph.metamorph as metamorph
 from pymetamorph.metamorph import MatchThese, OnTopic
+from hamcrest import *
 
 
 @when(u'a chat message is sent to topic nona_staging_Chat')
@@ -13,7 +14,10 @@ def step_impl(context):
 
 @then(u'that chat message is received on the WebSocket')
 def step_impl(context):
-    context.ws.await_chat(user_id='U1', team='staging', text='Some chat text')
+    message = context.ws.await_chat(user_id='U1', team='staging', text='Some chat text')
+    assert_that(message['user_id'], equal_to('U1'))
+    assert_that(message['team'], equal_to('staging'))
+    assert_that(message['text'], equal_to('Some chat text'))
 
 
 @when(u'a user requests a puzzle')
