@@ -85,7 +85,7 @@ class NonaStagingService:
         self._nonastaging.stop_chat_event_reader()
 
     def start(self):
-        self.loop = asyncio.new_event_loop()
+        self.loop = asyncio.get_event_loop()
         self._nonastaging = NonaStaging(self.loop, self._brokers, self._schema_path)
         self._nonastaging.run_forever()
 

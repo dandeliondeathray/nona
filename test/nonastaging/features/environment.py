@@ -34,15 +34,15 @@ def before_all(context):
 
 def after_all(context):
     context.service.stop()
-    #context.service_thread.join()
+    context.service_thread.join()
     context.metamorph_process.stop()
 
 
 def before_scenario(context, _scenario):
     time.sleep(2)
-    context.ws = NonaStagingClient('ws://localhost:8765')
-    context.ws.start()
+    context.client = NonaStagingClient('ws://localhost:8765')
+    context.client.start()
 
 
 def after_scenario(context, _scenario):
-    context.ws.stop()
+    context.client.stop()

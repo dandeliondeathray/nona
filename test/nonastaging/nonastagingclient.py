@@ -25,7 +25,7 @@ class NonaStagingClient:
         self._ws = self._loop.run_until_complete(websockets.connect(self._address, loop=self._loop))
 
     def stop(self):
-        self._loop.call_soon_threadsafe(self._loop.stop)
+        self._loop.run_until_complete(self._ws.close())
 
     def user_requests_puzzle(self, user_id):
         print("NonaStagingClient: User requests puzzle for user", user_id)
@@ -33,7 +33,7 @@ class NonaStagingClient:
         self._loop.run_until_complete(self._send_command(command))
 
     def await_chat(self, user_id, team, text):
-        self._loop.run_until_complete(self._await_chat(user_id, team, text))
+        return self._loop.run_until_complete(self._await_chat(user_id, team, text))
 
     @asyncio.coroutine
     def _await_chat(self, user_id, team, text):
@@ -55,7 +55,7 @@ class NonaStagingClient:
             chat_event = yield from self._ws.recv()
             print("Received chat event in client:", chat_event)
             chat = json.loads(chat_event)
-            if chat.user_id == user_id and chat.team == team and chat.text == text:
+            if chat['user_id'] == user_id and chat['team'] == team and chat['text'] == text:
                 return chat
             self._event_buffer.append(chat)
 

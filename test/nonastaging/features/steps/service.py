@@ -14,7 +14,7 @@ def step_impl(context):
 
 @then(u'that chat message is received on the WebSocket')
 def step_impl(context):
-    message = context.ws.await_chat(user_id='U1', team='staging', text='Some chat text')
+    message = context.client.await_chat(user_id='U1', team='staging', text='Some chat text')
     assert_that(message['user_id'], equal_to('U1'))
     assert_that(message['team'], equal_to('staging'))
     assert_that(message['text'], equal_to('Some chat text'))
@@ -22,7 +22,7 @@ def step_impl(context):
 
 @when(u'a user requests a puzzle')
 def step_impl(context):
-    context.ws.user_requests_puzzle(user_id='U1')
+    context.client.user_requests_puzzle(user_id='U1')
 
 
 @then(u'a request is sent to nona_UserRequestsPuzzle')
