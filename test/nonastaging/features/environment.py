@@ -35,6 +35,7 @@ def before_all(context):
 def after_all(context):
     context.service.stop()
     context.service_thread.join()
+    context.metamorph.close()
     context.metamorph_process.stop()
 
 

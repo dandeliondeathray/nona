@@ -19,6 +19,7 @@ class NonaStaging:
         self._nona = NonaInterface("staging", bootstrap_servers, schemas)
         self._clients = []
         self._chat_event_reader = None
+        self._stop_semaphore = threading.Semaphore()
 
     def read_chat_events(self):
         while True:
@@ -26,11 +27,20 @@ class NonaStaging:
             print("Read chat event from nona:", chat_event)
             if chat_event is None:
                 break
-            self.loop.call_soon_threadsafe(self.send_chat_event, chat_event)
+            self.loop.call_soon_threadsafe(asyncio.async, self.send_chat_event(chat_event))
+
+    def wait_for_stop(self):
+        self._stop_semaphore.acquire()
+
+    def stop(self):
+        self._nona.stop()
+        self.stop_chat_event_reader()
+        self.loop.stop()
+        self._stop_semaphore.release()
 
     def stop_chat_event_reader(self):
         self._nona.chat_events.put(None)
-        #self._chat_event_reader.join()
+        self._chat_event_reader.join()
 
     @asyncio.coroutine
     def send_chat_event(self, chat_event):
@@ -51,17 +61,17 @@ class NonaStaging:
             print("Invalid command:", command)
 
     @asyncio.coroutine
-    def read_commands(self, websocket):
-        while True:
-            msg = yield from websocket.recv()
-            print("Read command:", msg)
-            yield from self.handle_command(msg)
-
-    @asyncio.coroutine
     def add_client(self, websocket, _path):
         print("New connection")
         self._clients.append(websocket)
-        self.read_commands(websocket)
+        while True:
+            try:
+                msg = yield from websocket.recv()
+            except websockets.exceptions.ConnectionClosed:
+                print("Connection closed.")
+                return
+            print("Read command:", msg)
+            yield from self.handle_command(msg)
 
     def run_forever(self):
         """Start the event loop and only return when it is stopped."""
@@ -81,8 +91,8 @@ class NonaStagingService:
         self._nonastaging = None
 
     def stop(self):
-        self.loop.call_soon_threadsafe(self.loop.stop)
-        self._nonastaging.stop_chat_event_reader()
+        self.loop.call_soon_threadsafe(self._nonastaging.stop)
+        self._nonastaging.wait_for_stop()
 
     def start(self):
         self.loop = asyncio.get_event_loop()
@@ -90,6 +100,13 @@ class NonaStagingService:
         self._nonastaging.run_forever()
 
 if __name__ == "__main__":
+ #   import pymetamorph.metamorph
+#    m = pymetamorph.metamorph.Metamorph()
+#    m.connect()
+#    m.request_kafka_reset(['nona_UserRequestsPuzzle'])
+#    m.await_reset_complete()
+#    print("Reset complete")
+
     my_brokers = os.environ['KAFKA_BROKERS']
     my_schema_path = os.environ['SCHEMA_PATH']
     service = NonaStagingService(my_brokers, my_schema_path)
