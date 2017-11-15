@@ -100,13 +100,6 @@ class NonaStagingService:
         self._nonastaging.run_forever()
 
 if __name__ == "__main__":
- #   import pymetamorph.metamorph
-#    m = pymetamorph.metamorph.Metamorph()
-#    m.connect()
-#    m.request_kafka_reset(['nona_UserRequestsPuzzle'])
-#    m.await_reset_complete()
-#    print("Reset complete")
-
     my_brokers = os.environ['KAFKA_BROKERS']
     my_schema_path = os.environ['SCHEMA_PATH']
     service = NonaStagingService(my_brokers, my_schema_path)
