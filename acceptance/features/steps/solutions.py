@@ -1,16 +1,26 @@
 from behave import *
+from nonastagingclient import Matcher
+import re
+
+
+class PuzzleMatcher(Matcher):
+    def matches(self, value):
+        """Match that the value matches what a puzzle is displayed as."""
+        # TODO: Verify I'm using this right when I have an internet connection.
+        return re.match("[A-ZÅÄÖ]{3} [A-ZÅÄÖ]{3} [A-ZÅÄÖ]{3}", value) is not None
+
+    def __str__(self):
+        return "<a puzzle>"
 
 
 @when(u'Erik has requested the puzzle')
 def step_impl(context):
-    context.nonainterface.user_requests_puzzle("Erik")
+    context.client.user_requests_puzzle("Erik")
 
 
 @then(u'the response is a nine letter word')
 def step_impl(context):
-	# TODO: Team should be "staging"
-	# TODO: Match against word length, not actual word.
-    context.chat_queue.has("Erik", "konsulatet", "PUSSGURKA")
+    context.client.await_chat("Erik", "konsulatet", PuzzleMatcher())
 
 
 @given(u'Erik has gotten five puzzles')
@@ -30,7 +40,7 @@ def step_impl(context):
 
 @given(u'Erik has requested the puzzle')
 def step_impl(context):
-    context.nonainterface.user_requests_puzzle("Erik")
+    context.client.user_requests_puzzle("Erik")
 
 
 @given(u'he has solved the puzzle')
@@ -40,7 +50,7 @@ def step_impl(context):
 
 @when(u'Erik has requested a new puzzle')
 def step_impl(context):
-    context.nonainterface.user_requests_puzzle("Erik")
+    context.client.user_requests_puzzle("Erik")
 
 
 @then(u'the response is a different puzzle')

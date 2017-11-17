@@ -1,26 +1,18 @@
 """Acceptance test environment."""
 import os
-from nonainterface import NonaInterface, AvroSchemas
-from nonaspec.interface import ChatQueue
-
+from nonastagingclient import NonaStagingClient
 
 def before_all(context):
-    """Set up Kafka brokers URLs and load Avro schemas."""
-    context.bootstrap_servers = os.environ['KAFKA_BROKERS']
-    context.schemas = AvroSchemas(os.environ['SCHEMA_PATH'])
+    context.staging_address = os.environ['NONA_STAGING']
 
 
 def before_scenario(context, _scenario):
-    """Create a fresh NonaInterface and connect it."""
-    # TODO: Team should be "staging"
-    context.team = "konsulatet"
-    context.nonainterface = NonaInterface(team=context.team,
-                                          bootstrap_servers=context.bootstrap_servers,
-                                          schemas=context.schemas)
-    context.nonainterface.start()
-    context.chat_queue = ChatQueue(context.nonainterface.chat_events)
+    """Create a fresh NonaStagingClient and connect it."""
+    context.team = "staging"
+    context.client = NonaStagingClient("ws://mystaging:8765")
+    context.client.start()
 
 
 def after_scenario(context, _scenario):
-    """Stop the NonaInterface."""
-    context.nonainterface.stop()
+    """Stop the NonaStagingClient."""
+    context.client.stop()
