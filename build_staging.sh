@@ -21,7 +21,7 @@ COMMIT_HASH=$(git rev-parse HEAD)
 ./build_containers.sh $COMMIT_HASH
 exit_on_failure
 
-for image in erikedin/nonaslackmessaging erikedin/nonapuzzlestore
+for image in erikedin/nonaslackmessaging erikedin/nonapuzzlestore erikedin/nonaslack erikedin/nonastaging
 do
     sudo docker tag ${image}:${COMMIT_HASH} ${image}:staging
 done
