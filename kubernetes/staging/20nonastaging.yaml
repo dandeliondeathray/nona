@@ -1,42 +1,33 @@
 apiVersion: apps/v1beta1
 kind: Deployment
 metadata:
-  name: nonaslack
+  name: nonastaging
 spec:
   template:
     metadata:
       labels:
         app: nona
-        service: nonaslack
+        service: nonastaging
     spec:
       containers:
-      - name: nonaslack
-        image: erikedin/nonaslack:staging
+      - name: nonastaging
+        image: erikedin/nonastaging:staging
         imagePullPolicy: Always
         livenessProbe:
-          httpGet:
-            path: /health
-            port: 24689
+          tcpSocket:
+            port: 8765
           initialDelaySeconds: 60
           timeoutSeconds: 1
         readinessProbe:
-          httpGet:
-            path: /readiness
-            port: 24689
+          tcpSocket:
+            port: 8765
           initialDelaySeconds: 60
           timeoutSeconds: 1
         env:
-        - name: NOTIFICATION_CHANNEL
-          value: betacat
-        - name: SLACK_API_TOKEN
-          valueFrom:
-            secretKeyRef:
-              name: slack-token
-              key: nona.token
         - name: SCHEMA_PATH
           value: /schema
         - name: KAFKA_BROKERS
-          value: kafka-1.kafka:9092
+          value: kafka-1.kafka-staging:9092
         volumeMounts:
         - name: nona-schema-vol
           mountPath: /schema

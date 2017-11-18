@@ -29,7 +29,9 @@ spec:
         - name: SCHEMA_PATH
           value: /schema
         - name: KAFKA_BROKERS
-          value: kafka-1.kafka:9092
+          value: kafka-1.kafka-staging:9092
+        - name: TEAMS
+          value: staging
         volumeMounts:
         - name: nona-schema-vol
           mountPath: /schema
