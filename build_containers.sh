@@ -21,3 +21,8 @@ sudo docker build -t erikedin/nonaslackmessaging:${TAG} --build-arg PLUMBER_TAG=
 exit_on_failure
 sudo docker build -t erikedin/nonapuzzlestore:${TAG} --build-arg PLUMBER_TAG=${TAG} service/puzzlestore
 exit_on_failure
+sudo docker build -t erikedin/nonaslack:${TAG} --build-arg INTERFACE_TAG=${TAG} service/nonaslack
+exit_on_failure
+
+sudo docker build -t erikedin/nonastaging:${TAG} --build-arg INTERFACE_TAG=${TAG} test/nonastaging
+exit_on_failure
