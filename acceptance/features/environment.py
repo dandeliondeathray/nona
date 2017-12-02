@@ -1,18 +1,18 @@
 """Acceptance test environment."""
 import os
-from nonastagingclient import NonaStagingClient
+from nonacontrolclient import NonaControlClient
 
 def before_all(context):
     context.staging_address = os.environ['NONA_STAGING']
 
 
 def before_scenario(context, _scenario):
-    """Create a fresh NonaStagingClient and connect it."""
+    """Create a fresh NonaControlClient and connect it."""
     context.team = "staging"
-    context.client = NonaStagingClient(context.staging_address)
+    context.client = NonaControlClient(context.staging_address)
     context.client.start()
 
 
 def after_scenario(context, _scenario):
-    """Stop the NonaStagingClient."""
+    """Stop the NonaControlClient."""
     context.client.stop()

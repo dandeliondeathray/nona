@@ -1,10 +1,10 @@
 kind: Service
 apiVersion: v1
 metadata:
-  name: nonastaging
+  name: control
 spec:
   selector:
-    service: nonastaging
+    service: control
   ports:
   - protocol: TCP
     port: 8765
@@ -14,17 +14,17 @@ spec:
 apiVersion: apps/v1beta1
 kind: Deployment
 metadata:
-  name: nonastaging
+  name: control
 spec:
   template:
     metadata:
       labels:
         app: nona
-        service: nonastaging
+        service: control
     spec:
       containers:
-      - name: nonastaging
-        image: erikedin/nonastaging:staging
+      - name: control
+        image: erikedin/nonacontrol:staging
         imagePullPolicy: Always
         env:
         - name: SCHEMA_PATH
