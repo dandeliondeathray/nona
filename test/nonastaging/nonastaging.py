@@ -42,6 +42,12 @@ class NonaStaging:
         self._nona.chat_events.put(None)
         self._chat_event_reader.join()
 
+    def _remove_client(self, client):
+        try:
+            self._clients.remove(client)
+        except ValueError:
+            print("Connection was closed, but wasn't in _clients. Weird.")
+
     @asyncio.coroutine
     def send_chat_event(self, chat_event):
         clients = self._clients[:]
@@ -49,7 +55,11 @@ class NonaStaging:
                            'team': chat_event.team,
                            'text': chat_event.text}
         for client in clients:
-            yield from client.send(json.dumps(chat_event_json))
+            try:
+                yield from client.send(json.dumps(chat_event_json))
+            except:
+                print("Exception when sending chat event. Removing client from active list.")
+                self._remove_client(client)
 
     @asyncio.coroutine
     def handle_command(self, msg):

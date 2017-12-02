@@ -9,7 +9,7 @@ def before_all(context):
 def before_scenario(context, _scenario):
     """Create a fresh NonaStagingClient and connect it."""
     context.team = "staging"
-    context.client = NonaStagingClient("ws://mystaging:8765")
+    context.client = NonaStagingClient(context.staging_address)
     context.client.start()
 
 

@@ -7,7 +7,7 @@ class PuzzleMatcher(Matcher):
     def matches(self, value):
         """Match that the value matches what a puzzle is displayed as."""
         # TODO: Verify I'm using this right when I have an internet connection.
-        return re.match("[A-ZÅÄÖ]{3} [A-ZÅÄÖ]{3} [A-ZÅÄÖ]{3}", value) is not None
+        return re.match("[A-ZÅÄÖ]{3}[A-ZÅÄÖ]{3}[A-ZÅÄÖ]{3}", value) is not None
 
     def __str__(self):
         return "<a puzzle>"
@@ -20,7 +20,7 @@ def step_impl(context):
 
 @then(u'the response is a nine letter word')
 def step_impl(context):
-    context.client.await_chat("Erik", "konsulatet", PuzzleMatcher())
+    context.client.await_chat("Erik", "staging", PuzzleMatcher())
 
 
 @given(u'Erik has gotten five puzzles')

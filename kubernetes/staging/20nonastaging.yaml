@@ -1,3 +1,16 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: nonastaging
+spec:
+  selector:
+    service: nonastaging
+  ports:
+  - protocol: TCP
+    port: 8765
+    targetPort: 8765
+  type: NodePort
+---
 apiVersion: apps/v1beta1
 kind: Deployment
 metadata:
@@ -13,16 +26,6 @@ spec:
       - name: nonastaging
         image: erikedin/nonastaging:staging
         imagePullPolicy: Always
-        livenessProbe:
-          tcpSocket:
-            port: 8765
-          initialDelaySeconds: 60
-          timeoutSeconds: 1
-        readinessProbe:
-          tcpSocket:
-            port: 8765
-          initialDelaySeconds: 60
-          timeoutSeconds: 1
         env:
         - name: SCHEMA_PATH
           value: /schema
