@@ -57,7 +57,7 @@ class ChatMatcher:
                                                                         self._text_matcher)
 
 
-class NonaStagingClient:
+class NonaControlClient:
     def __init__(self, address, loop=None):
         self._address = address
         self._loop = loop if loop is not None else asyncio.new_event_loop()
@@ -71,7 +71,7 @@ class NonaStagingClient:
         self._loop.run_until_complete(self._ws.close())
 
     def user_requests_puzzle(self, user_id):
-        print("NonaStagingClient: User requests puzzle for user", user_id)
+        print("NonaControlClient: User requests puzzle for user", user_id)
         command = {'name': 'user_requests_puzzle', 'user_id': user_id}
         self._loop.run_until_complete(self._send_command(command))
 

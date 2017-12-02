@@ -1,4 +1,4 @@
-Feature: Nonastaging is a WebSocket interface against the nona system
+Feature: Control is a WebSocket interface against the nona system
 
     Scenario: A chat message is sent over the WebSocket
          When a chat message is sent to topic nona_staging_Chat

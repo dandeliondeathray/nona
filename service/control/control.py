@@ -1,6 +1,7 @@
 """
-Nonastaging is a WebSocket based interface to the Nona system. Its purpose is to simplify
-acceptance testing of the Nona system deployed in a staging environment.
+Control is a WebSocket based interface to the Nona system. Its purpose is to simplify
+acceptance testing of the Nona system deployed in a staging environment, and serve as the back-end
+for a REPL for controlling the nona system.
 """
 
 import asyncio
@@ -11,12 +12,12 @@ from nonainterface import NonaInterface, AvroSchemas
 import websockets
 
 
-class NonaStaging:
-    """NonaStaging implements the entire micro service."""
-    def __init__(self, loop, bootstrap_servers, schema_path):
+class NonaControl:
+    """NonaControl implements the entire micro service."""
+    def __init__(self, loop, team, bootstrap_servers, schema_path):
         self.loop = loop
         schemas = AvroSchemas(schema_path)
-        self._nona = NonaInterface("staging", bootstrap_servers, schemas)
+        self._nona = NonaInterface(team, bootstrap_servers, schemas)
         self._clients = []
         self._chat_event_reader = None
         self._stop_semaphore = threading.Semaphore()
@@ -93,8 +94,9 @@ class NonaStaging:
         self.loop.run_until_complete(start_server)
         self.loop.run_forever()
 
-class NonaStagingService:
-    def __init__(self, brokers, schema_path):
+class NonaControlService:
+    def __init__(self, team, brokers, schema_path):
+        self._team = team
         self._brokers = brokers
         self._schema_path = schema_path
         self.loop = None
@@ -106,11 +108,12 @@ class NonaStagingService:
 
     def start(self):
         self.loop = asyncio.get_event_loop()
-        self._nonastaging = NonaStaging(self.loop, self._brokers, self._schema_path)
+        self._nonastaging = NonaControl(self.loop, self._team, self._brokers, self._schema_path)
         self._nonastaging.run_forever()
 
 if __name__ == "__main__":
     my_brokers = os.environ['KAFKA_BROKERS']
     my_schema_path = os.environ['SCHEMA_PATH']
-    service = NonaStagingService(my_brokers, my_schema_path)
+    team = os.environ['TEAM']
+    service = NonaControlService(team, my_brokers, my_schema_path)
     service.start()

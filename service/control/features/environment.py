@@ -3,8 +3,8 @@ import threading
 import asyncio
 import pymetamorph.metamorph as metamorph
 import pymetamorph.process
-from nonastaging import NonaStagingService
-from nonastagingclient import NonaStagingClient
+from control import NonaControlService
+from nonacontrolclient import NonaControlClient
 from nonainterface import AvroSchemas
 
 
@@ -19,7 +19,8 @@ def before_all(context):
     print("Metamorph reset complete")
 
     context.schemas = AvroSchemas('../../service/schema')
-    context.service = NonaStagingService(brokers='localhost:9092',
+    context.service = NonaControlService(team='staging',
+                                         brokers='localhost:9092',
                                          schema_path="../../service/schema")
 
     def start_service_with_loop():
@@ -41,7 +42,7 @@ def after_all(context):
 
 def before_scenario(context, _scenario):
     time.sleep(2)
-    context.client = NonaStagingClient('ws://localhost:8765')
+    context.client = NonaControlClient('ws://localhost:8765')
     context.client.start()
 
 

@@ -1,11 +1,12 @@
-# Nonastaging
-Nonastaging is a WebSocket based interface to the Nona system. Its purpose is to simplify
-acceptance testing of the Nona system deployed in a staging environment.
+# Control
+Control is a WebSocket based interface to the Nona system. Its purpose is to simplify
+acceptance testing of the Nona system deployed in a staging environment, and to work as the back-end
+of a REPL for the Nona system.
 
 It is designed to be a testable replacement of the Slack integration `nonaslack`.
 
 # WebSocket interface
-Interact with Nona by sending JSON messages over the WebSocket connection to Nonastaging. Below are
+Interact with Nona by sending JSON messages over the WebSocket connection to Control. Below are
 examples for each supported message
 
 Request a puzzle for a given user:

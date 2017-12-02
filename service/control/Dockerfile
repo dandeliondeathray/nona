@@ -10,4 +10,4 @@ COPY . /app/
 
 RUN useradd -m user
 
-CMD [ "python", "/app/nonastaging.py" ]
+CMD [ "python", "/app/control.py" ]
