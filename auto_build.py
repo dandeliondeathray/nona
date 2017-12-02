@@ -159,8 +159,8 @@ SLACKMESSAGING = DockerImageBuilder("erikedin/nonaslackmessaging:{commit_id}",
                                     "service/slackmessaging",
                                     ["PLUMBER_TAG={commit_id}"],
                                     dependencies=[PLUMBER])
-NONASTAGING = DockerImageBuilder("erikedin/nonastaging:{commit_id}",
-                                 "test/nonastaging",
+NONACONTROL = DockerImageBuilder("erikedin/nonacontrol:{commit_id}",
+                                 "service/control",
                                  ["INTERFACE_TAG={commit_id}"],
                                  dependencies=[NONAINTERFACE])
 TAG_PUZZLESTORE_AS_STAGING = DockerTagger("erikedin/nonapuzzlestore:{commit_id}",
@@ -169,16 +169,16 @@ TAG_PUZZLESTORE_AS_STAGING = DockerTagger("erikedin/nonapuzzlestore:{commit_id}"
 TAG_SLACKMESSAGING_AS_STAGING = DockerTagger("erikedin/nonaslackmessaging:{commit_id}",
                                              "erikedin/nonaslackmessaging:staging",
                                              dependencies=[SLACKMESSAGING])
-TAG_NONASTAGING_AS_STAGING = DockerTagger("erikedin/nonastaging:{commit_id}",
-                                          "erikedin/nonastaging:staging",
-                                          dependencies=[NONASTAGING])
+TAG_NONACONTROL_AS_STAGING = DockerTagger("erikedin/nonacontrol:{commit_id}",
+                                          "erikedin/nonacontrol:staging",
+                                          dependencies=[NONACONTROL])
 
 TAG_AS_STAGING = OnlyDependencies(dependencies=[TAG_PUZZLESTORE_AS_STAGING,
                                                 TAG_SLACKMESSAGING_AS_STAGING,
-                                                TAG_NONASTAGING_AS_STAGING])
+                                                TAG_NONACONTROL_AS_STAGING])
 PUSH_TO_STAGING = DockerPusher(["erikedin/nonapuzzlestore:staging",
                                 "erikedin/nonaslackmessaging:staging",
-                                "erikedin/nonastaging:staging"],
+                                "erikedin/nonacontrol:staging"],
                                dependencies=[TAG_AS_STAGING])
 
 
