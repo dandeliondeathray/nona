@@ -4,13 +4,14 @@ import "math/rand"
 
 // Puzzles keeps all puzzles and generates new on demand.
 type Puzzles struct {
-	random *rand.Rand
-	chain  []string
+	random     *rand.Rand
+	chain      []string
+	dictionary []string
 }
 
 // NewPuzzles creates a new Puzzles.
-func NewPuzzles(seed int64) *Puzzles {
-	return &Puzzles{rand.New(rand.NewSource(seed)), make([]string, 0)}
+func NewPuzzles(dictionary []string, seed int64) *Puzzles {
+	return &Puzzles{rand.New(rand.NewSource(seed)), make([]string, 0), dictionary}
 }
 
 // Get returns a puzzle for a given index.
@@ -21,14 +22,15 @@ func (p *Puzzles) Get(index int) string {
 	noOfPuzzlesInChain := len(p.chain)
 	noOfPuzzlesToGenerate := index + 1 - noOfPuzzlesInChain
 	for i := 0; i < noOfPuzzlesToGenerate; i++ {
-		puzzle := p.shuffle("PUSSGURKA")
+		word := p.chooseAWord()
+		puzzle := p.shuffle(word)
 		p.chain = append(p.chain, puzzle)
 	}
 	return p.chain[index]
 }
 
 //
-// Shuffling the characters of a word
+// Dictionary helpers
 //
 func (p *Puzzles) shuffle(word string) string {
 	runes := []rune(word)
@@ -39,4 +41,9 @@ func (p *Puzzles) shuffle(word string) string {
 		shuffledRunes[i] = runes[p]
 	}
 	return string(shuffledRunes)
+}
+
+func (p *Puzzles) chooseAWord() string {
+	dictionaryIndex := p.random.Intn(len(p.dictionary))
+	return p.dictionary[dictionaryIndex]
 }

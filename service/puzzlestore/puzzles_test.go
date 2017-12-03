@@ -1,11 +1,75 @@
 package puzzlestore
 
 import (
+	"sort"
 	"testing"
 )
 
+var dictionary = []string{
+	"ACCEPTANS",
+	"BUKMUSKEL",
+	"CHARKDISK",
+	"DATORSPEL",
+	"EFTERSMAK",
+	"FAKTARUTA",
+	"GARANTERA",
+	"HYPERTEXT",
+	"IMPERATIV",
+	"JETSETARE",
+	"KANELBRUN",
+	"LEGOKLOSS",
+	"MIKROCHIP",
+	"NAVELLUDD",
+	"OISOLERAD",
+	"PARAMETER",
+	"QATARISKA",
+	"ROSRABATT",
+	"SKILJEDOM"}
+
+type RuneSlice []rune
+
+func (r RuneSlice) Len() int {
+	return len(r)
+}
+
+func (r RuneSlice) Less(i, j int) bool {
+	return r[i] < r[j]
+
+}
+func (r RuneSlice) Swap(i, j int) {
+	r[j], r[i] = r[i], r[j]
+}
+
+func sortLetters(word string) string {
+	runes := RuneSlice(word)
+	sort.Sort(runes)
+	return string(runes)
+}
+
+func isInDictionary(word string) bool {
+	for _, a := range dictionary {
+		if a == word {
+			return true
+		}
+	}
+	return false
+}
+
+func findSolutionToPuzzle(puzzle string) (string, bool) {
+	sortedPuzzle := sortLetters(puzzle)
+	for _, a := range dictionary {
+		if sortLetters(a) == sortedPuzzle {
+			return a, true
+		}
+	}
+	return "", false
+}
+
+//
+// Getting the puzzle
+//
 func TestGetPuzzle_ForAGivenUserAndTeam_PuzzleIsNotEmpty(t *testing.T) {
-	puzzles := NewPuzzles(0)
+	puzzles := NewPuzzles(dictionary, 0)
 
 	myPuzzle := puzzles.Get(0)
 
@@ -15,7 +79,7 @@ func TestGetPuzzle_ForAGivenUserAndTeam_PuzzleIsNotEmpty(t *testing.T) {
 }
 
 func TestGetPuzzle_GetTwoPuzzles_NextPuzzleIsDifferent(t *testing.T) {
-	puzzles := NewPuzzles(0)
+	puzzles := NewPuzzles(dictionary, 0)
 
 	puzzle0 := puzzles.Get(0)
 	puzzle1 := puzzles.Get(1)
@@ -26,7 +90,7 @@ func TestGetPuzzle_GetTwoPuzzles_NextPuzzleIsDifferent(t *testing.T) {
 }
 
 func TestGetPuzzle_GetIndex10Directly_NoNeedToGetPrecedingIndicesFirst(t *testing.T) {
-	puzzles := NewPuzzles(0)
+	puzzles := NewPuzzles(dictionary, 0)
 
 	puzzle10 := puzzles.Get(10)
 	puzzle10Again := puzzles.Get(10)
@@ -42,10 +106,10 @@ func TestGetPuzzle_GetIndex10Directly_NoNeedToGetPrecedingIndicesFirst(t *testin
 //
 
 func TestPseudoRandomness_Index0ForDifferentSeeds_PuzzlesAreDifferent(t *testing.T) {
-	puzzles1 := NewPuzzles(0)
+	puzzles1 := NewPuzzles(dictionary, 0)
 	puzzle1 := puzzles1.Get(0)
 
-	puzzles2 := NewPuzzles(1)
+	puzzles2 := NewPuzzles(dictionary, 1)
 	puzzle2 := puzzles2.Get(0)
 
 	if puzzle1 == puzzle2 {
@@ -54,12 +118,51 @@ func TestPseudoRandomness_Index0ForDifferentSeeds_PuzzlesAreDifferent(t *testing
 }
 
 func TestPseudoRandomness_GetIndex0Twice_SamePuzzleBothTimes(t *testing.T) {
-	puzzles := NewPuzzles(0)
+	puzzles := NewPuzzles(dictionary, 0)
 	puzzle1 := puzzles.Get(0)
 	puzzle2 := puzzles.Get(0)
 
 	if puzzle1 != puzzle2 {
 		t.Fatalf("Puzzle at an index should remain constant during a round, but they were'%s' and '%s'",
 			puzzle1, puzzle2)
+	}
+}
+
+//
+// Dictionary
+//
+
+func TestDictionary_GetPuzzle_PuzzleIsNotAWord(t *testing.T) {
+	puzzles := NewPuzzles(dictionary, 0)
+
+	puzzle := puzzles.Get(0)
+
+	if isInDictionary(puzzle) {
+		t.Fatalf("The puzzle %s was found in the dictionary. It should not have been.", puzzle)
+	}
+}
+
+func TestDictionary_GetPuzzle_PuzzleIsAShuffledWord(t *testing.T) {
+	puzzles := NewPuzzles(dictionary, 0)
+
+	puzzle := puzzles.Get(0)
+
+	if _, ok := findSolutionToPuzzle(puzzle); !ok {
+		t.Fatalf("The puzzle %s should be a shuffled word in the dictionary.", puzzle)
+	}
+}
+
+func TestDictionary_GetTwoPuzzles_DifferentSolutions(t *testing.T) {
+	puzzles := NewPuzzles(dictionary, 0)
+
+	puzzle0 := puzzles.Get(0)
+	puzzle1 := puzzles.Get(1)
+
+	solution0, _ := findSolutionToPuzzle(puzzle0)
+	solution1, _ := findSolutionToPuzzle(puzzle1)
+
+	if solution0 == solution1 {
+		t.Fatalf("the puzzles at index 0 and 1 should (with high probability) have different "+
+			"solutions, but were the same: %s", solution0)
 	}
 }
