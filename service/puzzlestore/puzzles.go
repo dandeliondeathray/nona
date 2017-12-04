@@ -1,6 +1,10 @@
 package puzzlestore
 
-import "math/rand"
+import (
+	"math/rand"
+
+	"golang.org/x/text/unicode/norm"
+)
 
 // Puzzles keeps all puzzles and generates new on demand.
 type Puzzles struct {
@@ -11,7 +15,9 @@ type Puzzles struct {
 
 // NewPuzzles creates a new Puzzles.
 func NewPuzzles(dictionary []string, seed int64) *Puzzles {
-	return &Puzzles{rand.New(rand.NewSource(seed)), make([]string, 0), dictionary}
+	return &Puzzles{random: rand.New(rand.NewSource(seed)),
+		chain:      make([]string, 0),
+		dictionary: normalize(dictionary)}
 }
 
 // Get returns a puzzle for a given index.
@@ -46,4 +52,13 @@ func (p *Puzzles) shuffle(word string) string {
 func (p *Puzzles) chooseAWord() string {
 	dictionaryIndex := p.random.Intn(len(p.dictionary))
 	return p.dictionary[dictionaryIndex]
+}
+
+// normalize returns a new dictionary with all words normalized according to NFKC.
+func normalize(dictionary []string) []string {
+	normalized := make([]string, len(dictionary))
+	for i, w := range dictionary {
+		normalized[i] = norm.NFKC.String(w)
+	}
+	return normalized
 }

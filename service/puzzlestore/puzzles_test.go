@@ -3,6 +3,8 @@ package puzzlestore
 import (
 	"sort"
 	"testing"
+
+	"golang.org/x/text/unicode/norm"
 )
 
 var dictionary = []string{
@@ -164,5 +166,28 @@ func TestDictionary_GetTwoPuzzles_DifferentSolutions(t *testing.T) {
 	if solution0 == solution1 {
 		t.Fatalf("the puzzles at index 0 and 1 should (with high probability) have different "+
 			"solutions, but were the same: %s", solution0)
+	}
+}
+
+//
+// Unicode normalization.
+//
+
+func TestUnicodeNormalization_DictionaryWordIsDecomposed_PuzzleIsNormalized(t *testing.T) {
+	word := norm.NFKC.String("ÅÄÖ")
+	thisDictionary := []string{norm.NFD.String(word)}
+	puzzles := NewPuzzles(thisDictionary, 0)
+
+	puzzle := puzzles.Get(0)
+
+	sortedWord := []rune(sortLetters(word))
+	sortedPuzzle := []rune(sortLetters(puzzle))
+	if len(sortedWord) != len(sortedPuzzle) {
+		t.Fatalf("Word and puzzle have different number of runes: word '%v', puzzle '%v'", sortedWord, sortedPuzzle)
+	}
+	for i := range sortedWord {
+		if sortedWord[i] != sortedPuzzle[i] {
+			t.Fatalf("Word and puzzle mismatch at index %d: Word %v, puzzle %v", i, sortedWord, sortedPuzzle)
+		}
 	}
 }
