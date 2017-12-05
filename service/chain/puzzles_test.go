@@ -1,4 +1,4 @@
-package puzzlestore
+package chain
 
 import (
 	"sort"
