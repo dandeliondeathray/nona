@@ -15,7 +15,7 @@ def before_all(context):
     context.metamorph.request_kafka_reset([])
     context.metamorph.await_reset_complete()
 
-    env = {'SCHEMA_PATH': '../schema', 'KAFKA_BROKERS': 'localhost:9092'}
+    env = {'SCHEMA_PATH': '../schema', 'KAFKA_BROKERS': 'localhost:9092', 'DICTIONARY_PATH': '../../test/dictionary.txt'}
     context.chain_process = pymetamorph.process.start(go='bin/nona_chain', env=env)
 
 

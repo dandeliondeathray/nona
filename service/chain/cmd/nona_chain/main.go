@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"log"
 	"os"
 	"strings"
@@ -15,6 +16,10 @@ func main() {
 	if brokerEnv == "" {
 		log.Fatalf("No KAFKA_BROKERS set!")
 	}
+	dictionaryPath := os.Getenv("DICTIONARY_PATH")
+	if dictionaryPath == "" {
+		log.Fatalf("No DICTIONARY_PATH set!")
+	}
 	brokers := strings.Split(brokerEnv, ",")
 	log.Println("Kafka brokers:", brokers)
 
@@ -23,7 +28,11 @@ func main() {
 		log.Fatalf("Could not load codecs from path %s", schemasPath)
 	}
 
-	teams := chain.NewTeams([]string{"BEBIS"})
+	dictionary, err := readLinesFromDictionary(dictionaryPath)
+	if err != nil {
+		log.Fatalf("Could not read dictionary, because: %s", err)
+	}
+	teams := chain.NewTeams(dictionary)
 
 	service := chain.NewService(teams)
 	service.Start()
@@ -37,4 +46,20 @@ func main() {
 
 	chBlock := make(chan bool)
 	<-chBlock
+}
+
+func readLinesFromDictionary(path string) ([]string, error) {
+	inFile, err := os.Open(path)
+	if err != nil {
+		return []string{}, err
+	}
+	defer inFile.Close()
+	scanner := bufio.NewScanner(inFile)
+	scanner.Split(bufio.ScanLines)
+
+	dictionary := make([]string, 0, 1000)
+	for scanner.Scan() {
+		dictionary = append(dictionary, scanner.Text())
+	}
+	return dictionary, nil
 }
