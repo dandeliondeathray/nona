@@ -17,7 +17,7 @@ func (s *Service) handleNewRounds() {
 	log.Println("Start handling requests.")
 	for newRound := range s.chNewRounds {
 		log.Printf("New round for team %s with seed %d", newRound.Team, newRound.Seed)
-		// TODO: Implement me
+		s.teams.NewRound(newRound.Team, newRound.Seed)
 	}
 }
 

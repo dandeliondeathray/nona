@@ -23,7 +23,7 @@ func main() {
 		log.Fatalf("Could not load codecs from path %s", schemasPath)
 	}
 
-	teams := chain.NewTeams([]string{"BEBIS", "STORBEBIS"})
+	teams := chain.NewTeams([]string{"BEBIS"})
 
 	service := chain.NewService(teams)
 	service.Start()
