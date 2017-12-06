@@ -9,6 +9,7 @@ Feature: A pseudo-randomly generated chain of puzzles
     Given a new round
      When a request is made for a puzzle at index 1
      Then it is a different puzzle than the one before
+      And the solution is a different word
   
   Scenario: No round
     Given no new round for a team

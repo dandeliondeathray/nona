@@ -32,9 +32,18 @@ def step_impl(context):
 @then(u'it is a different puzzle than the one before')
 def step_impl(context):
     response = requests.get('http://localhost:8080/puzzle/{}/0'.format(context.team))
+    context.prev_status_code = response.status_code
+    context.prev_body = response.text
     assert_that(context.status_code, equal_to(200))
-    assert_that(response.status_code, equal_to(200))
-    assert_that(context.body, is_not(equal_to(response.text)))
+    assert_that(context.prev_status_code, equal_to(200))
+    assert_that(context.body, is_not(equal_to(context.prev_body)))
+
+
+@then(u'the solution is a different word')
+def step_impl(context):
+    letters_in_puzzle = ''.join(sorted(context.body))
+    letters_in_prev_puzzle = ''.join(sorted(context.prev_body))
+    assert_that(letters_in_puzzle, is_not(equal_to(letters_in_prev_puzzle)))
 
 
 @given(u'no new round for a team')
