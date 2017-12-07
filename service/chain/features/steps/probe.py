@@ -12,7 +12,7 @@ def step_impl(context):
 
 @when(u'an HTTP ready probe checks the service')
 def step_impl(context):
-    context.probe_response = probe.http_probe('http://localhost:8080/readiness')
+    context.probe_response = probe.http_probe('http://localhost:{}/readiness'.format(context.port))
 
 
 @then(u'an OK response is returned')
@@ -28,4 +28,4 @@ def step_impl(context):
 
 @when(u'an HTTP liveness probe checks the service')
 def step_impl(context):
-    context.probe_response = probe.http_probe('http://localhost:8080/liveness')
+    context.probe_response = probe.http_probe('http://localhost:{}/liveness'.format(context.port))

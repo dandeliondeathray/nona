@@ -18,7 +18,7 @@ def step_impl(context):
 
 @when(u'a request is made for a puzzle at index {index}')
 def step_impl(context, index):
-    response = requests.get('http://localhost:8080/puzzle/{}/{}'.format(context.team, index))
+    response = requests.get('http://localhost:{}/puzzle/{}/{}'.format(context.port, context.team, index))
     context.status_code = response.status_code
     context.body = response.text
 
@@ -31,7 +31,7 @@ def step_impl(context):
 
 @then(u'it is a different puzzle than the one before')
 def step_impl(context):
-    response = requests.get('http://localhost:8080/puzzle/{}/0'.format(context.team))
+    response = requests.get('http://localhost:{}/puzzle/{}/0'.format(context.port, context.team))
     context.prev_status_code = response.status_code
     context.prev_body = response.text
     assert_that(context.status_code, equal_to(200))

@@ -39,6 +39,7 @@ func (s *Service) getPuzzle(w http.ResponseWriter, r *http.Request) {
 //
 // Blocks until the server fails, therefore you must call it as a goroutine.
 func (s *Service) ListenAndServe(port int) {
+	log.Printf("Starting REST service on port %d", port)
 	r := mux.NewRouter()
 	r.HandleFunc("/readiness", readiness)
 	r.HandleFunc("/liveness", liveness)

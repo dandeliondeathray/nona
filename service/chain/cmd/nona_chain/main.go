@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"log"
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/dandeliondeathray/nona/service/chain"
@@ -22,6 +23,16 @@ func main() {
 	}
 	brokers := strings.Split(brokerEnv, ",")
 	log.Println("Kafka brokers:", brokers)
+
+	portEnv := os.Getenv("NONA_CHAIN_PORT")
+	port := 8080
+	if portEnv != "" {
+		portInt, err := strconv.Atoi(portEnv)
+		if err != nil {
+			log.Fatalf("Port is not an int: %v", portEnv)
+		}
+		port = portInt
+	}
 
 	codecs, err := plumber.LoadCodecsFromPath(schemasPath)
 	if err != nil {
@@ -42,7 +53,7 @@ func main() {
 		log.Fatalf("Could not start plumber: %s", err)
 	}
 
-	service.ListenAndServe(8080)
+	service.ListenAndServe(port)
 
 	chBlock := make(chan bool)
 	<-chBlock
