@@ -15,3 +15,9 @@ Feature: A pseudo-randomly generated chain of puzzles
     Given no new round for a team
      When a request is made for a puzzle at index 0
      Then no puzzle was found
+
+  Scenario: Service recovery
+    Given a new round
+     When a request is made for a puzzle at index 5
+      And the service goes down and comes back up again
+     Then a request for the puzzle at index 5 gives the same answer as before
