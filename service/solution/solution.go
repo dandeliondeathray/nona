@@ -1,6 +1,10 @@
 package solution
 
-import "sort"
+import (
+	"sort"
+
+	"golang.org/x/text/unicode/norm"
+)
 
 // Word represents a potential solution to a puzzle.
 type Word string
@@ -15,10 +19,12 @@ type Solutions struct {
 
 // Check if a word is a correct solution to a given puzzle.
 func (s *Solutions) Check(word Word, puzzle Puzzle) bool {
-	sortedWord := sortLetters(string(word))
-	sortedPuzzle := sortLetters(string(puzzle))
+	normalWord := normalizeWord(word)
+	normalPuzzle := normalizePuzzle(puzzle)
+	sortedWord := sortLetters(string(normalWord))
+	sortedPuzzle := sortLetters(string(normalPuzzle))
 	matchesPuzzle := sortedWord == sortedPuzzle
-	_, isInDictionary := s.dictionary[word]
+	_, isInDictionary := s.dictionary[normalWord]
 	return isInDictionary && matchesPuzzle
 }
 
@@ -26,12 +32,24 @@ func (s *Solutions) Check(word Word, puzzle Puzzle) bool {
 func NewSolutions(dictionary []string) *Solutions {
 	dictionarySet := make(map[Word]bool)
 	for _, w := range dictionary {
-		dictionarySet[Word(w)] = true
+		dictionarySet[normalizeWord(Word(w))] = true
 	}
 	return &Solutions{dictionarySet}
 }
 
 // Helpers
+
+func normalize(s string) string {
+	return norm.NFKC.String(s)
+}
+
+func normalizeWord(w Word) Word {
+	return Word(normalize(string(w)))
+}
+
+func normalizePuzzle(p Puzzle) Puzzle {
+	return Puzzle(normalize(string(p)))
+}
 
 type runeSlice []rune
 

@@ -1,8 +1,9 @@
 package solution
 
 import "testing"
+import "golang.org/x/text/unicode/norm"
 
-var dictionary = []string{"PUSSGURKA", "DATORSPEL"}
+var dictionary = []string{"PUSSGURKA", "DATORSPEL", "ABCDEFÅÄÖ"}
 
 func TestSolution_ProperWordAndPuzzleMatch_SolutionIsCorrect(t *testing.T) {
 	solutions := NewSolutions(dictionary)
@@ -34,5 +35,42 @@ func TestSolution_ProperWordDoesNotMAtchPuzzle_SolutionIsIncorrect(t *testing.T)
 
 	if solutions.Check(properWord, puzzle) {
 		t.Fatalf("Word %s should NOT be a correct solution for puzzle %s", properWord, puzzle)
+	}
+}
+
+func TestSolution_NonNormalWordInDictionary_SolutionIsCorrect(t *testing.T) {
+	solutions := NewSolutions(dictionary)
+
+	nonNormalWord := Word(norm.NFD.String("ABCDEFÅÄÖ"))
+	puzzle := Puzzle(string(nonNormalWord))
+
+	if !solutions.Check(nonNormalWord, puzzle) {
+		t.Fatalf("Word %s should be a correct solution for puzzle %s, even though it's not in normal form", nonNormalWord, puzzle)
+	}
+}
+
+func TestSolution_CorrectWordWithNonNormalDictionary_SolutionIsCorrect(t *testing.T) {
+	nonNormalDictionary := make([]string, len(dictionary))
+	for i, w := range dictionary {
+		nonNormalDictionary[i] = norm.NFD.String(w)
+	}
+	solutions := NewSolutions(nonNormalDictionary)
+
+	normalWord := Word(norm.NFKC.String("ABCDEFÅÄÖ"))
+	puzzle := Puzzle(string(normalWord))
+
+	if !solutions.Check(normalWord, puzzle) {
+		t.Fatalf("Word %s should match non-normal entry in dictionary for puzzle %s", normalWord, puzzle)
+	}
+}
+
+func TestSolution_NonNormalPuzzleWithNormalWord_SolutionIsCorrect(t *testing.T) {
+	solutions := NewSolutions(dictionary)
+
+	normalWord := Word(norm.NFKC.String("ABCDEFÅÄÖ"))
+	puzzle := Puzzle(norm.NFD.String(string(normalWord)))
+
+	if !solutions.Check(normalWord, puzzle) {
+		t.Fatalf("Word %s should be a correct solution for puzzle %s, even though the puzzle is not in normal form", normalWord, puzzle)
 	}
 }
