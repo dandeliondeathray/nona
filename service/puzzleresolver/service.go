@@ -1,4 +1,4 @@
-package puzzlestore
+package puzzleresolver
 
 import (
 	"log"
@@ -7,7 +7,7 @@ import (
 	"github.com/dandeliondeathray/nona/service/plumber"
 )
 
-// Service represents the PuzzleStore micro service.
+// Service represents the PuzzleResolver micro service.
 type Service struct {
 	chRequests      chan *PuzzleRequest
 	chNotifications chan PuzzleNotification
@@ -44,7 +44,7 @@ func (s *Service) Configuration() plumber.Configuration {
 				Topic:         "nona_PuzzleNotification"}}}
 }
 
-// NewService creates a new PuzzleStore service.
+// NewService creates a new PuzzleResolver service.
 func NewService() *Service {
 	return &Service{
 		chRequests:      make(chan *PuzzleRequest, 100),

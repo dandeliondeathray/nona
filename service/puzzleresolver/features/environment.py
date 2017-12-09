@@ -22,9 +22,9 @@ def before_scenario(context, scenario):
     context.metamorph.await_reset_complete()
 
     env = {'SCHEMA_PATH': '../schema', 'KAFKA_BROKERS': 'localhost:9092'}
-    context.puzzlestore_process = pymetamorph.process.start(go='bin/nona_puzzlestore', env=env)
+    context.puzzleresolver_process = pymetamorph.process.start(go='bin/nona_puzzleresolver', env=env)
 
 
 def after_scenario(context, scenario):
-    context.puzzlestore_process.stop()
+    context.puzzleresolver_process.stop()
 

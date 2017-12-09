@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/dandeliondeathray/nona/service/plumber"
-	"github.com/dandeliondeathray/nona/service/puzzlestore"
+	"github.com/dandeliondeathray/nona/service/puzzleresolver"
 )
 
 func main() {
@@ -23,7 +23,7 @@ func main() {
 		log.Fatalf("Could not load codecs from path %s", schemasPath)
 	}
 
-	service := puzzlestore.NewService()
+	service := puzzleresolver.NewService()
 	service.Start()
 
 	plumber := plumber.NewPlumber(service, codecs)
@@ -31,7 +31,7 @@ func main() {
 		log.Fatalf("Could not start plumber: %s", err)
 	}
 
-	go puzzlestore.StartProbes(24689)
+	go puzzleresolver.StartProbes(24689)
 
 	chBlock := make(chan bool)
 	<-chBlock

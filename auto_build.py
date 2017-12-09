@@ -151,10 +151,10 @@ PLUMBER = DockerImageBuilder("erikedin/nonaplumber:{commit_id}",
 NONAINTERFACE = DockerImageBuilder("erikedin/nonainterface:{commit_id}",
                                    "service/nonainterface",
                                    [])
-PUZZLESTORE = DockerImageBuilder("erikedin/nonapuzzlestore:{commit_id}",
-                                 "service/puzzlestore",
-                                 ["PLUMBER_TAG={commit_id}"],
-                                 dependencies=[PLUMBER])
+PUZZLE_RESOLVER = DockerImageBuilder("erikedin/nonapuzzleresolver:{commit_id}",
+                                     "service/puzzleresolver",
+                                     ["PLUMBER_TAG={commit_id}"],
+                                     dependencies=[PLUMBER])
 SLACKMESSAGING = DockerImageBuilder("erikedin/nonaslackmessaging:{commit_id}",
                                     "service/slackmessaging",
                                     ["PLUMBER_TAG={commit_id}"],
@@ -163,9 +163,9 @@ NONACONTROL = DockerImageBuilder("erikedin/nonacontrol:{commit_id}",
                                  "service/control",
                                  ["INTERFACE_TAG={commit_id}"],
                                  dependencies=[NONAINTERFACE])
-TAG_PUZZLESTORE_AS_STAGING = DockerTagger("erikedin/nonapuzzlestore:{commit_id}",
-                                          "erikedin/nonapuzzlestore:staging",
-                                          dependencies=[PUZZLESTORE])
+TAG_PUZZLERESOLVER_AS_STAGING = DockerTagger("erikedin/nonapuzzleresolver:{commit_id}",
+                                             "erikedin/nonapuzzleresolver:staging",
+                                             dependencies=[PUZZLE_RESOLVER])
 TAG_SLACKMESSAGING_AS_STAGING = DockerTagger("erikedin/nonaslackmessaging:{commit_id}",
                                              "erikedin/nonaslackmessaging:staging",
                                              dependencies=[SLACKMESSAGING])
@@ -173,10 +173,10 @@ TAG_NONACONTROL_AS_STAGING = DockerTagger("erikedin/nonacontrol:{commit_id}",
                                           "erikedin/nonacontrol:staging",
                                           dependencies=[NONACONTROL])
 
-TAG_AS_STAGING = OnlyDependencies(dependencies=[TAG_PUZZLESTORE_AS_STAGING,
+TAG_AS_STAGING = OnlyDependencies(dependencies=[TAG_PUZZLERESOLVER_AS_STAGING,
                                                 TAG_SLACKMESSAGING_AS_STAGING,
                                                 TAG_NONACONTROL_AS_STAGING])
-PUSH_TO_STAGING = DockerPusher(["erikedin/nonapuzzlestore:staging",
+PUSH_TO_STAGING = DockerPusher(["erikedin/nonapuzzleresolver:staging",
                                 "erikedin/nonaslackmessaging:staging",
                                 "erikedin/nonacontrol:staging"],
                                dependencies=[TAG_AS_STAGING])

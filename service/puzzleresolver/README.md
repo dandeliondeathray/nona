@@ -1,8 +1,7 @@
-Puzzlestore
-===========
-Puzzlestore is the service that maintains the puzzle state. When a user
-requests a new puzzle, it is the Puzzlestore which keeps track of what
-the current puzzle is.
+PuzzleResolver
+==============
+PuzzleResolver is the service that maintains the puzzle state for a given user. When a user
+requests a new puzzle, it is the PuzzleResolver which keeps track of what the current puzzle is.
 
 ## Messages
 Consumes topic `nona_UserRequestsPuzzle`.

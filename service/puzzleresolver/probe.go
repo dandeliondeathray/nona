@@ -1,4 +1,4 @@
-package puzzlestore
+package puzzleresolver
 
 import (
 	"fmt"
