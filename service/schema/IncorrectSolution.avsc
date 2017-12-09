@@ -1,9 +1,0 @@
-{
-  "namespace": "nona",
-  "type": "record",
-  "name": "IncorrectSolution",
-  "fields": [
-    {"name": "user_id",    "type": "string"},
-    {"name": "team",       "type": "string"}
-  ]
-}
