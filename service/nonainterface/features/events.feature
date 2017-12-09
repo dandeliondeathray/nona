@@ -8,6 +8,11 @@ Feature: User interface against the microservices
      When a user requests a puzzle
      Then a UserRequestsPuzzle is sent to topic nona_UserRequestsPuzzle
 
+  Scenario: Sending a solution
+    Given a team konsulatet
+     When a user sends an attempted solution
+     Then a SolutionRequest is sent to topic nona_SolutionRequest
+
   Scenario: Puzzle response
     Given a team konsulatet
      When there is a puzzle response in nona_konsulatet_Chat

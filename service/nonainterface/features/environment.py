@@ -17,7 +17,8 @@ def after_all(context):
     context.metamorph_process.stop()
 
 def before_scenario(context, scenario):
-    context.metamorph.request_kafka_reset(["nona_UserRequestsPuzzle"])
+    context.metamorph.request_kafka_reset(["nona_UserRequestsPuzzle",
+                                           "nona_SolutionRequest"])
     context.metamorph.await_reset_complete()
 
     schemas = AvroSchemas('../schema')
