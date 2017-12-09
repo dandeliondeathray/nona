@@ -1,0 +1,12 @@
+{
+  "namespace": "nona",
+  "type": "record",
+  "name": "ResolvedSolutionRequest",
+  "fields": [
+    {"name": "user_id",    "type": "string"},
+    {"name": "team",       "type": "string"},
+    {"name": "word",       "type": "string"},
+    {"name": "puzzle",     "type": "string"},
+    {"name": "timestamp",  "type": "long"}
+  ]
+}
