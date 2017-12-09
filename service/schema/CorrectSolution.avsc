@@ -4,6 +4,6 @@
   "name": "CorrectSolution",
   "fields": [
     {"name": "user_id",    "type": "string"},
-    {"name": "team",       "type": "string"},
+    {"name": "team",       "type": "string"}
   ]
 }
