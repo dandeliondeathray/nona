@@ -9,6 +9,7 @@ import (
 )
 
 var dictionary = []string{"PUSSGURKA"}
+var oracle = newGameOracle(dictionary)
 
 func TestGiveMeCommand_ForANewRound_PuzzleIsReturned(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
@@ -37,6 +38,7 @@ func TestPuzzles_SolveFirstPuzzle_NextPuzzleIsDifferent(t *testing.T) {
 	nona := game.NewGame(response, dictionary)
 	nona.NewRound(0)
 	nona.GiveMe(player)
-	nona.TryWord(player, game.Word("PUSSGURKA"))
+	correctWord := game.Word(oracle.FindASolutionFor(*differentPuzzles.puzzle))
+	nona.TryWord(player, correctWord)
 	nona.GiveMe(player)
 }
