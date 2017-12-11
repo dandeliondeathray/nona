@@ -1,16 +1,10 @@
-package solution
+package game
 
 import (
 	"sort"
 
 	"golang.org/x/text/unicode/norm"
 )
-
-// Word represents a potential solution to a puzzle.
-type Word string
-
-// Puzzle represents a puzzle, which is a word with the letters shuffled.
-type Puzzle string
 
 // Solutions is a struct that maintains all functionality for checking solutions to puzzles.
 type Solutions struct {
