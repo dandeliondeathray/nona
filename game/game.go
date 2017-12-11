@@ -13,7 +13,7 @@ type Game struct {
 	response    Response
 	puzzleChain *chain.Puzzles
 	dictionary  []string
-	playerState map[Player]int
+	persistence Persistence
 	solutions   *Solutions
 }
 
@@ -24,32 +24,37 @@ func (g *Game) NewRound(seed int64) {
 
 // GiveMe requests a puzzle notification for a player.
 func (g *Game) GiveMe(player Player) {
-	playerState, ok := g.playerState[player]
-	if !ok {
-		playerState = 0
-	}
-	puzzle := Puzzle(g.puzzleChain.Get(playerState))
-	g.response.OnPuzzleNotification(player, puzzle)
+	notifyPlayerOfPuzzle := puzzleNotification{
+		player:      player,
+		puzzleChain: g.puzzleChain,
+		response:    g.response}
+
+	g.persistence.ResolvePlayerState(player, &notifyPlayerOfPuzzle)
 }
 
 // TryWord checks if the supplied word is a correct solution for the current puzzle.
 func (g *Game) TryWord(player Player, word Word) {
-	playerState, ok := g.playerState[player]
-	if !ok {
-		playerState = 0
-	}
-	puzzle := Puzzle(g.puzzleChain.Get(playerState))
-	if g.solutions.Check(word, puzzle) {
-		g.playerState[player] = playerState + 1
-	}
+	// playerState, ok := g.playerState[player]
+	// if !ok {
+	// 	playerState = 0
+	// }
+	// puzzle := Puzzle(g.puzzleChain.Get(playerState))
+	// if g.solutions.Check(word, puzzle) {
+	// 	g.playerState[player] = playerState + 1
+	// }
 }
 
 // NewGame creates a new game type, given a dictionary.
-func NewGame(response Response, dictionary []string) *Game {
+func NewGame(response Response, persistence Persistence, dictionary []string) *Game {
 	return &Game{
 		response:    response,
 		puzzleChain: nil,
 		dictionary:  dictionary,
-		playerState: make(map[Player]int),
+		persistence: persistence,
 		solutions:   NewSolutions(dictionary)}
+}
+
+// PlayerState has all state for a given player.
+type PlayerState struct {
+	NextPuzzle int
 }

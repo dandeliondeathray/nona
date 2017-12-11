@@ -17,11 +17,15 @@ func TestGiveMeCommand_ForANewRound_PuzzleIsReturned(t *testing.T) {
 
 	player := game.Player("U1")
 	response := mock.NewMockResponse(mockCtrl)
+	persistence := newFakePersistence()
+
+	// Assert
 	response.EXPECT().OnPuzzleNotification(player, gomock.Any())
 
-	nona := game.NewGame(response, acceptanceDictionary)
+	nona := game.NewGame(response, persistence, acceptanceDictionary)
 	nona.NewRound(0)
 	nona.GiveMe(player)
+	persistence.playerStateResolved(player, game.PlayerState{NextPuzzle: 0})
 }
 
 func TestPuzzles_SolveFirstPuzzle_NextPuzzleIsDifferent(t *testing.T) {
@@ -32,15 +36,18 @@ func TestPuzzles_SolveFirstPuzzle_NextPuzzleIsDifferent(t *testing.T) {
 
 	player := game.Player("U1")
 	response := mock.NewMockResponse(mockCtrl)
+	persistence := newFakePersistence()
 	response.EXPECT().OnPuzzleNotification(player, &differentPuzzles)
 	response.EXPECT().OnPuzzleNotification(player, &differentPuzzles)
 
-	nona := game.NewGame(response, acceptanceDictionary)
+	nona := game.NewGame(response, persistence, acceptanceDictionary)
 	nona.NewRound(0)
 	nona.GiveMe(player)
+	persistence.playerStateResolved(player, game.PlayerState{NextPuzzle: 0})
 	correctWord := game.Word(oracle.FindASolutionFor(*differentPuzzles.puzzle))
 	nona.TryWord(player, correctWord)
 	nona.GiveMe(player)
+	persistence.playerStateResolved(player, game.PlayerState{NextPuzzle: 1})
 }
 
 func TestTwoPlayers_FirstPuzzle_SameForBothPlayers(t *testing.T) {
@@ -52,13 +59,16 @@ func TestTwoPlayers_FirstPuzzle_SameForBothPlayers(t *testing.T) {
 	player1 := game.Player("U1")
 	player2 := game.Player("U2")
 	response := mock.NewMockResponse(mockCtrl)
+	persistence := newFakePersistence()
 	response.EXPECT().OnPuzzleNotification(player1, &firstPuzzleIsTheSame)
 	response.EXPECT().OnPuzzleNotification(player2, &firstPuzzleIsTheSame)
 
-	nona := game.NewGame(response, acceptanceDictionary)
+	nona := game.NewGame(response, persistence, acceptanceDictionary)
 	nona.NewRound(0)
 	nona.GiveMe(player1)
+	persistence.playerStateResolved(player1, game.PlayerState{NextPuzzle: 0})
 	nona.GiveMe(player2)
+	persistence.playerStateResolved(player2, game.PlayerState{NextPuzzle: 0})
 }
 
 func TestTwoPlayers_FirstPlayerSolvesIt_SecondPlayersPuzzleIsUnchanged(t *testing.T) {
@@ -72,20 +82,24 @@ func TestTwoPlayers_FirstPlayerSolvesIt_SecondPlayersPuzzleIsUnchanged(t *testin
 	player1 := game.Player("U1")
 	player2 := game.Player("U2")
 	response := mock.NewMockResponse(mockCtrl)
+	persistence := newFakePersistence()
 
 	response.EXPECT().OnPuzzleNotification(player1, &player1Puzzle)
 	response.EXPECT().OnPuzzleNotification(player2, &player2PuzzleUnchanged)
 	response.EXPECT().OnPuzzleNotification(player2, &player2PuzzleUnchanged)
 
 	// Arrange
-	nona := game.NewGame(response, acceptanceDictionary)
+	nona := game.NewGame(response, persistence, acceptanceDictionary)
 	nona.NewRound(0)
 	nona.GiveMe(player1)
+	persistence.playerStateResolved(player1, game.PlayerState{NextPuzzle: 0})
 	nona.GiveMe(player2)
+	persistence.playerStateResolved(player2, game.PlayerState{NextPuzzle: 0})
 	correctWord := game.Word(oracle.FindASolutionFor(*player1Puzzle.puzzle))
 	nona.TryWord(player1, correctWord)
 
 	// Act
 	// Here player1 has solved the first puzzle, but player2's puzzle should still be the first one.
 	nona.GiveMe(player2)
+	persistence.playerStateResolved(player2, game.PlayerState{NextPuzzle: 0})
 }

@@ -77,3 +77,24 @@ func (p *puzzleSaver) String() string {
 	}
 	return fmt.Sprintf("puzzleSaver{%s}", s)
 }
+
+// fakePersistence is a stand-in for the persistence layer.
+type fakePersistence struct {
+	resolutions map[game.Player]game.PlayerStateResolution
+}
+
+func (p *fakePersistence) ResolvePlayerState(player game.Player, resolution game.PlayerStateResolution) {
+	p.resolutions[player] = resolution
+}
+
+func (p *fakePersistence) playerStateResolved(player game.Player, state game.PlayerState) {
+	resolution, ok := p.resolutions[player]
+	if !ok {
+		panic(fmt.Sprintf("playerStateResolved: No call to ResolvePlayerState for player %s was made", player))
+	}
+	resolution.PlayerStateResolved(state)
+}
+
+func newFakePersistence() *fakePersistence {
+	return &fakePersistence{make(map[game.Player]game.PlayerStateResolution)}
+}
