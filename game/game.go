@@ -34,14 +34,8 @@ func (g *Game) GiveMe(player Player) {
 
 // TryWord checks if the supplied word is a correct solution for the current puzzle.
 func (g *Game) TryWord(player Player, word Word) {
-	// playerState, ok := g.playerState[player]
-	// if !ok {
-	// 	playerState = 0
-	// }
-	// puzzle := Puzzle(g.puzzleChain.Get(playerState))
-	// if g.solutions.Check(word, puzzle) {
-	// 	g.playerState[player] = playerState + 1
-	// }
+	checkSolution := checkWord{player: player, word: word, persistence: g.persistence}
+	g.persistence.ResolvePlayerState(player, &checkSolution)
 }
 
 // NewGame creates a new game type, given a dictionary.
@@ -56,5 +50,36 @@ func NewGame(response Response, persistence Persistence, dictionary []string) *G
 
 // PlayerState has all state for a given player.
 type PlayerState struct {
-	NextPuzzle int
+	PuzzleIndex int
+}
+
+// NewPlayerState creates a state for a player that just started playing.
+func NewPlayerState() PlayerState {
+	return PlayerState{PuzzleIndex: 0}
+}
+
+// puzzleNotification tells the player what the current puzzle is, when resolved by the database.
+type puzzleNotification struct {
+	player      Player
+	puzzleChain *chain.Puzzles
+	response    Response
+}
+
+// PlayerStateResolved for puzzleNotification gets the current puzzle from the chain and notifies
+// the player.
+func (p *puzzleNotification) PlayerStateResolved(playerState PlayerState) {
+	puzzle := Puzzle(p.puzzleChain.Get(playerState.PuzzleIndex))
+	p.response.OnPuzzleNotification(p.player, puzzle)
+}
+
+// checkWord takes a resolved player state and checks the provided word against the current puzzle
+// and the dicionary.
+type checkWord struct {
+	player      Player
+	word        Word
+	persistence Persistence
+}
+
+func (c *checkWord) PlayerStateResolved(playerState PlayerState) {
+	c.persistence.PlayerSolvedPuzzle(c.player, playerState.PuzzleIndex+1)
 }

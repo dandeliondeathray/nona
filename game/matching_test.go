@@ -81,20 +81,40 @@ func (p *puzzleSaver) String() string {
 // fakePersistence is a stand-in for the persistence layer.
 type fakePersistence struct {
 	resolutions map[game.Player]game.PlayerStateResolution
+	states      map[game.Player]game.PlayerState
 }
 
 func (p *fakePersistence) ResolvePlayerState(player game.Player, resolution game.PlayerStateResolution) {
 	p.resolutions[player] = resolution
+	_, playerStateExists := p.states[player]
+	if !playerStateExists {
+		p.states[player] = game.NewPlayerState()
+	}
 }
 
-func (p *fakePersistence) playerStateResolved(player game.Player, state game.PlayerState) {
+func (p *fakePersistence) PlayerSolvedPuzzle(player game.Player, newPuzzleIndex int) {
+	state, ok := p.states[player]
+	if !ok {
+		panic(fmt.Sprintf("Player %s solved the puzzle, and the new state is %d, but no such state was found", player, newPuzzleIndex))
+	}
+	state.PuzzleIndex = newPuzzleIndex
+	p.states[player] = state
+}
+
+func (p *fakePersistence) playerStateResolved(player game.Player) {
 	resolution, ok := p.resolutions[player]
 	if !ok {
 		panic(fmt.Sprintf("playerStateResolved: No call to ResolvePlayerState for player %s was made", player))
+	}
+	state, ok := p.states[player]
+	if !ok {
+		state = game.NewPlayerState()
 	}
 	resolution.PlayerStateResolved(state)
 }
 
 func newFakePersistence() *fakePersistence {
-	return &fakePersistence{make(map[game.Player]game.PlayerStateResolution)}
+	return &fakePersistence{
+		make(map[game.Player]game.PlayerStateResolution),
+		make(map[game.Player]game.PlayerState)}
 }

@@ -25,7 +25,7 @@ func TestGiveMeCommand_ForANewRound_PuzzleIsReturned(t *testing.T) {
 	nona := game.NewGame(response, persistence, acceptanceDictionary)
 	nona.NewRound(0)
 	nona.GiveMe(player)
-	persistence.playerStateResolved(player, game.PlayerState{NextPuzzle: 0})
+	persistence.playerStateResolved(player)
 }
 
 func TestPuzzles_SolveFirstPuzzle_NextPuzzleIsDifferent(t *testing.T) {
@@ -43,11 +43,12 @@ func TestPuzzles_SolveFirstPuzzle_NextPuzzleIsDifferent(t *testing.T) {
 	nona := game.NewGame(response, persistence, acceptanceDictionary)
 	nona.NewRound(0)
 	nona.GiveMe(player)
-	persistence.playerStateResolved(player, game.PlayerState{NextPuzzle: 0})
+	persistence.playerStateResolved(player)
 	correctWord := game.Word(oracle.FindASolutionFor(*differentPuzzles.puzzle))
 	nona.TryWord(player, correctWord)
+	persistence.playerStateResolved(player)
 	nona.GiveMe(player)
-	persistence.playerStateResolved(player, game.PlayerState{NextPuzzle: 1})
+	persistence.playerStateResolved(player)
 }
 
 func TestTwoPlayers_FirstPuzzle_SameForBothPlayers(t *testing.T) {
@@ -66,9 +67,9 @@ func TestTwoPlayers_FirstPuzzle_SameForBothPlayers(t *testing.T) {
 	nona := game.NewGame(response, persistence, acceptanceDictionary)
 	nona.NewRound(0)
 	nona.GiveMe(player1)
-	persistence.playerStateResolved(player1, game.PlayerState{NextPuzzle: 0})
+	persistence.playerStateResolved(player1)
 	nona.GiveMe(player2)
-	persistence.playerStateResolved(player2, game.PlayerState{NextPuzzle: 0})
+	persistence.playerStateResolved(player2)
 }
 
 func TestTwoPlayers_FirstPlayerSolvesIt_SecondPlayersPuzzleIsUnchanged(t *testing.T) {
@@ -92,14 +93,15 @@ func TestTwoPlayers_FirstPlayerSolvesIt_SecondPlayersPuzzleIsUnchanged(t *testin
 	nona := game.NewGame(response, persistence, acceptanceDictionary)
 	nona.NewRound(0)
 	nona.GiveMe(player1)
-	persistence.playerStateResolved(player1, game.PlayerState{NextPuzzle: 0})
+	persistence.playerStateResolved(player1)
 	nona.GiveMe(player2)
-	persistence.playerStateResolved(player2, game.PlayerState{NextPuzzle: 0})
+	persistence.playerStateResolved(player2)
 	correctWord := game.Word(oracle.FindASolutionFor(*player1Puzzle.puzzle))
 	nona.TryWord(player1, correctWord)
+	persistence.playerStateResolved(player1)
 
 	// Act
 	// Here player1 has solved the first puzzle, but player2's puzzle should still be the first one.
 	nona.GiveMe(player2)
-	persistence.playerStateResolved(player2, game.PlayerState{NextPuzzle: 0})
+	persistence.playerStateResolved(player2)
 }
