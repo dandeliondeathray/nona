@@ -9,4 +9,5 @@ type Puzzle string
 type Response interface {
 	OnPuzzleNotification(player Player, puzzle Puzzle)
 	OnCorrectWord(player Player, word Word)
+	OnIncorrectWord(player Player, word Word)
 }

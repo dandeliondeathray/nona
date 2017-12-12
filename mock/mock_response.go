@@ -43,6 +43,16 @@ func (mr *MockResponseMockRecorder) OnCorrectWord(arg0, arg1 interface{}) *gomoc
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OnCorrectWord", reflect.TypeOf((*MockResponse)(nil).OnCorrectWord), arg0, arg1)
 }
 
+// OnIncorrectWord mocks base method
+func (m *MockResponse) OnIncorrectWord(arg0 game.Player, arg1 game.Word) {
+	m.ctrl.Call(m, "OnIncorrectWord", arg0, arg1)
+}
+
+// OnIncorrectWord indicates an expected call of OnIncorrectWord
+func (mr *MockResponseMockRecorder) OnIncorrectWord(arg0, arg1 interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OnIncorrectWord", reflect.TypeOf((*MockResponse)(nil).OnIncorrectWord), arg0, arg1)
+}
+
 // OnPuzzleNotification mocks base method
 func (m *MockResponse) OnPuzzleNotification(arg0 game.Player, arg1 game.Puzzle) {
 	m.ctrl.Call(m, "OnPuzzleNotification", arg0, arg1)

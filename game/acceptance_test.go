@@ -64,6 +64,7 @@ func TestPuzzles_TryIncorrectSolution_CurrentPuzzleIsUnchanged(t *testing.T) {
 	response.EXPECT().OnPuzzleNotification(player, &puzzleIsUnchanged)
 	response.EXPECT().OnPuzzleNotification(player, &puzzleIsUnchanged)
 	response.EXPECT().OnCorrectWord(gomock.Any(), gomock.Any()).AnyTimes()
+	response.EXPECT().OnIncorrectWord(gomock.Any(), gomock.Any()).AnyTimes()
 
 	nona := game.NewGame(response, persistence, acceptanceDictionary)
 	nona.NewRound(0)
@@ -98,22 +99,27 @@ func TestPuzzles_CorrectSolution_UserIsNotified(t *testing.T) {
 	persistence.playerStateResolved(player)
 }
 
-func TestPuzzles_IncorrectSolution_UserIsNotNotified(t *testing.T) {
+func TestPuzzles_IncorrectSolution_UserIsToldItIsIncorrect(t *testing.T) {
+	// Assert
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 
 	player := game.Player("U1")
+	incorrectWord := game.Word("THISISNOTAWORD")
+
 	response := mock.NewMockResponse(mockCtrl)
 	persistence := newFakePersistence()
 	response.EXPECT().OnPuzzleNotification(player, gomock.Any())
 	response.EXPECT().OnCorrectWord(player, gomock.Any()).Times(0)
+	response.EXPECT().OnIncorrectWord(player, incorrectWord)
 
+	// Arrange
 	nona := game.NewGame(response, persistence, acceptanceDictionary)
 	nona.NewRound(0)
 	nona.GiveMe(player)
 	persistence.playerStateResolved(player)
-	incorrectWord := game.Word("THISISNOTAWORD")
 
+	// Act
 	nona.TryWord(player, incorrectWord)
 	persistence.playerStateResolved(player)
 }

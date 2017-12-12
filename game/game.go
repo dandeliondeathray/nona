@@ -94,5 +94,7 @@ func (c *checkWord) PlayerStateResolved(playerState PlayerState) {
 	if c.solutions.Check(c.word, puzzle) {
 		c.persistence.PlayerSolvedPuzzle(c.player, playerState.PuzzleIndex+1)
 		c.response.OnCorrectWord(c.player, c.word)
+	} else {
+		c.response.OnIncorrectWord(c.player, c.word)
 	}
 }
