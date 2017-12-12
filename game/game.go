@@ -39,7 +39,8 @@ func (g *Game) TryWord(player Player, word Word) {
 		word:        word,
 		persistence: g.persistence,
 		solutions:   g.solutions,
-		puzzleChain: g.puzzleChain}
+		puzzleChain: g.puzzleChain,
+		response:    g.response}
 	g.persistence.ResolvePlayerState(player, &checkSolution)
 }
 
@@ -85,11 +86,13 @@ type checkWord struct {
 	persistence Persistence
 	solutions   *Solutions
 	puzzleChain *chain.Puzzles
+	response    Response
 }
 
 func (c *checkWord) PlayerStateResolved(playerState PlayerState) {
 	puzzle := Puzzle(c.puzzleChain.Get(playerState.PuzzleIndex))
 	if c.solutions.Check(c.word, puzzle) {
 		c.persistence.PlayerSolvedPuzzle(c.player, playerState.PuzzleIndex+1)
+		c.response.OnCorrectWord(c.player, c.word)
 	}
 }
