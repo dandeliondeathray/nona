@@ -34,7 +34,12 @@ func (g *Game) GiveMe(player Player) {
 
 // TryWord checks if the supplied word is a correct solution for the current puzzle.
 func (g *Game) TryWord(player Player, word Word) {
-	checkSolution := checkWord{player: player, word: word, persistence: g.persistence}
+	checkSolution := checkWord{
+		player:      player,
+		word:        word,
+		persistence: g.persistence,
+		solutions:   g.solutions,
+		puzzleChain: g.puzzleChain}
 	g.persistence.ResolvePlayerState(player, &checkSolution)
 }
 
@@ -78,8 +83,13 @@ type checkWord struct {
 	player      Player
 	word        Word
 	persistence Persistence
+	solutions   *Solutions
+	puzzleChain *chain.Puzzles
 }
 
 func (c *checkWord) PlayerStateResolved(playerState PlayerState) {
-	c.persistence.PlayerSolvedPuzzle(c.player, playerState.PuzzleIndex+1)
+	puzzle := Puzzle(c.puzzleChain.Get(playerState.PuzzleIndex))
+	if c.solutions.Check(c.word, puzzle) {
+		c.persistence.PlayerSolvedPuzzle(c.player, playerState.PuzzleIndex+1)
+	}
 }

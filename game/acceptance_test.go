@@ -51,6 +51,29 @@ func TestPuzzles_SolveFirstPuzzle_NextPuzzleIsDifferent(t *testing.T) {
 	persistence.playerStateResolved(player)
 }
 
+func TestPuzzles_TryIncorrectSolution_CurrentPuzzleIsUnchanged(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	puzzleIsUnchanged := samePuzzlesMatcher{}
+
+	player := game.Player("U1")
+	response := mock.NewMockResponse(mockCtrl)
+	persistence := newFakePersistence()
+	response.EXPECT().OnPuzzleNotification(player, &puzzleIsUnchanged)
+	response.EXPECT().OnPuzzleNotification(player, &puzzleIsUnchanged)
+
+	nona := game.NewGame(response, persistence, acceptanceDictionary)
+	nona.NewRound(0)
+	nona.GiveMe(player)
+	persistence.playerStateResolved(player)
+	incorrectWord := game.Word("THISISNOTAWORD")
+	nona.TryWord(player, incorrectWord)
+	persistence.playerStateResolved(player)
+	nona.GiveMe(player)
+	persistence.playerStateResolved(player)
+}
+
 func TestTwoPlayers_FirstPuzzle_SameForBothPlayers(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()

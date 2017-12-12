@@ -53,7 +53,7 @@ func (m *samePuzzlesMatcher) String() string {
 	if m.puzzle == nil {
 		return "<first puzzle not set>"
 	}
-	return fmt.Sprintf("puzzle different from %s", *m.puzzle)
+	return fmt.Sprintf("puzzle %s", *m.puzzle)
 }
 
 // Save the puzzle sent from Nona.
