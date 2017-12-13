@@ -30,6 +30,7 @@ func (p *inMemoryPersistence) PlayerSolvedPuzzle(player game.Player, newPuzzleIn
 		panic(fmt.Sprintf("Player %s solved the puzzle, new index is %d, but no state was found", player, newPuzzleIndex))
 	}
 	state.PuzzleIndex = newPuzzleIndex
+	p.states[player] = state
 }
 
 func main() {
@@ -42,8 +43,9 @@ func main() {
 	response := slack.SlackResponse{ChOutgoing: chOutgoing}
 
 	dictionary := []string{"PUSSGURKA"}
-	persistence := inMemoryPersistence{}
+	persistence := inMemoryPersistence{make(map[game.Player]game.PlayerState)}
 	nona := game.NewGame(&response, &persistence, dictionary)
+	nona.NewRound(0)
 
 	slack.RunSlack(token, nona, chOutgoing)
 }

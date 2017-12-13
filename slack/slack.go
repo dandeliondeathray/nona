@@ -1,12 +1,36 @@
 package slack
 
 import (
+	"fmt"
 	"log"
 	"os"
+	"sync"
 
 	"github.com/dandeliondeathray/nona/game"
 	"github.com/nlopes/slack"
 )
+
+type slackChannels struct {
+	channels map[game.Player]string
+	mutex    sync.Mutex
+}
+
+func (s *slackChannels) setReplyChannel(player game.Player, channelID string) {
+	defer s.mutex.Unlock()
+	s.mutex.Lock()
+
+	s.channels[player] = channelID
+}
+
+func (s *slackChannels) getReplyChannel(player game.Player) string {
+	channelID, ok := s.channels[player]
+	if !ok {
+		panic(fmt.Sprintf("No reply channel found for player %s", player))
+	}
+	return channelID
+}
+
+var channels = slackChannels{channels: make(map[game.Player]string), mutex: sync.Mutex{}}
 
 // RunSlack connects to slack and listens to messages.
 func RunSlack(token string, nona *game.Game, chOutgoing <-chan OutgoingMessage) {
@@ -35,6 +59,7 @@ func RunSlack(token string, nona *game.Game, chOutgoing <-chan OutgoingMessage) 
 			log.Printf("Message: %v\n", ev)
 			msgEvent := msg.Data.(*slack.MessageEvent)
 			player := game.Player(msgEvent.User)
+			channels.setReplyChannel(player, msgEvent.Channel)
 			if msgEvent.Text == "!gemig" {
 				nona.GiveMe(player)
 			} else {
@@ -63,6 +88,7 @@ func RunSlack(token string, nona *game.Game, chOutgoing <-chan OutgoingMessage) 
 
 func writeOutgoingMessages(chOutgoing <-chan OutgoingMessage, rtm *slack.RTM) {
 	for m := range chOutgoing {
-		rtm.SendMessage(rtm.NewOutgoingMessage(m.User, m.Text))
+		replyChannel := channels.getReplyChannel(m.Player)
+		rtm.SendMessage(rtm.NewOutgoingMessage(m.Text, replyChannel))
 	}
 }

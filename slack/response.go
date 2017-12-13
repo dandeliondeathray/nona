@@ -7,8 +7,8 @@ import (
 )
 
 type OutgoingMessage struct {
-	User string
-	Text string
+	Player game.Player
+	Text   string
 }
 
 type SlackResponse struct {
@@ -16,14 +16,14 @@ type SlackResponse struct {
 }
 
 func (r *SlackResponse) OnPuzzleNotification(player game.Player, puzzle game.Puzzle) {
-	r.ChOutgoing <- OutgoingMessage{string(player), string(puzzle)}
+	r.ChOutgoing <- OutgoingMessage{player, string(puzzle)}
 }
 
 func (r *SlackResponse) OnCorrectWord(player game.Player, word game.Word) {
 	m := fmt.Sprintf("Ordet %s är korrekt!", word)
-	r.ChOutgoing <- OutgoingMessage{string(player), m}
+	r.ChOutgoing <- OutgoingMessage{player, m}
 }
 
 func (r *SlackResponse) OnIncorrectWord(player game.Player, word game.Word) {
-	r.ChOutgoing <- OutgoingMessage{string(player), "Inte korrekt"}
+	r.ChOutgoing <- OutgoingMessage{player, "Inte korrekt"}
 }
