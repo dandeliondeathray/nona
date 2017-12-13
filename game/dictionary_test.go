@@ -1,4 +1,4 @@
-package nona_test
+package game_test
 
 import (
 	"testing"
