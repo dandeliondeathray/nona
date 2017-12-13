@@ -11,5 +11,5 @@ type PlayerStateResolution interface {
 // Persistence is the interface towards the database.
 type Persistence interface {
 	ResolvePlayerState(player Player, resolution PlayerStateResolution)
-	PlayerSolvedPuzzle(player Player, puzzleIndex int)
+	PlayerSolvedPuzzle(player Player, newPuzzleIndex int)
 }
