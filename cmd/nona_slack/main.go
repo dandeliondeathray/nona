@@ -39,10 +39,18 @@ func main() {
 		log.Fatalf("SLACK_TOKEN must be set.")
 	}
 
+	dictionaryPath := os.Getenv("DICTIONARY")
+	if dictionaryPath == "" {
+		log.Fatalf("DICTIONARY must be set to the path of the dictionary file.")
+	}
+
 	chOutgoing := make(chan slack.OutgoingMessage)
 	response := slack.SlackResponse{ChOutgoing: chOutgoing}
 
-	dictionary := []string{"PUSSGURKA"}
+	dictionary, err := game.LoadDictionaryFromFile(dictionaryPath)
+	if err != nil {
+		log.Fatalf("Error when reading dictionary: %v", err)
+	}
 	persistence := inMemoryPersistence{make(map[game.Player]game.PlayerState)}
 	nona := game.NewGame(&response, &persistence, dictionary)
 	nona.NewRound(0)
