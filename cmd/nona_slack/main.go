@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"math/rand"
 	"os"
 
 	"github.com/dandeliondeathray/nona/game"
@@ -53,7 +54,7 @@ func main() {
 	}
 	persistence := inMemoryPersistence{make(map[game.Player]game.PlayerState)}
 	nona := game.NewGame(&response, &persistence, dictionary)
-	nona.NewRound(0)
+	nona.NewRound(rand.Int63())
 
 	slack.RunSlack(token, nona, chOutgoing)
 }

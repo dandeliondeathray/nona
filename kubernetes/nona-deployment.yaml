@@ -1,0 +1,34 @@
+apiVersion: apps/v1beta2
+kind: Deployment
+metadata:
+  name: nona
+  labels:
+    app: nona
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nona
+  template:
+    metadata:
+      labels:
+        app: nona
+    spec:
+      containers:
+      - name: nona
+        image: erikedin/nona:latest
+        env:
+          - name: DICTIONARY
+            value: /dictionary/dictionary.txt
+          - name: SLACK_TOKEN
+            valueFrom:
+              secretKeyRef:
+                name: slack-token
+                key: nona.token
+        volumeMounts:
+        - name: dictionary-vol
+          mountPath: /dictionary
+      volumes:
+      - name: dictionary-vol
+        configMap:
+          name: dictionary

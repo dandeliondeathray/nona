@@ -15,7 +15,6 @@ func LoadDictionaryFromFile(path string) ([]string, error) {
 	dictionary := []string{}
 	scanner := bufio.NewScanner(dictionaryFile)
 	for scanner.Scan() {
-		fmt.Println(scanner.Text()) // Println will add back the final '\n'
 		dictionary = append(dictionary, scanner.Text())
 	}
 	if err := scanner.Err(); err != nil {
