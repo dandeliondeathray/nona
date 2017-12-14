@@ -24,6 +24,6 @@ func (r *SlackResponse) OnCorrectWord(player game.Player, word game.Word) {
 	r.ChOutgoing <- OutgoingMessage{player, m}
 }
 
-func (r *SlackResponse) OnIncorrectWord(player game.Player, word game.Word) {
+func (r *SlackResponse) OnIncorrectWord(player game.Player, word game.Word, tooMany, tooFew string) {
 	r.ChOutgoing <- OutgoingMessage{player, "Inte korrekt"}
 }

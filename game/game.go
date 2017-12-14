@@ -95,6 +95,7 @@ func (c *checkWord) PlayerStateResolved(playerState PlayerState) {
 		c.persistence.PlayerSolvedPuzzle(c.player, playerState.PuzzleIndex+1)
 		c.response.OnCorrectWord(c.player, c.word)
 	} else {
-		c.response.OnIncorrectWord(c.player, c.word)
+		tooMany, tooFew := Diff(string(c.word), string(puzzle))
+		c.response.OnIncorrectWord(c.player, c.word, tooMany, tooFew)
 	}
 }

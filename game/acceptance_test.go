@@ -64,7 +64,7 @@ func TestPuzzles_TryIncorrectSolution_CurrentPuzzleIsUnchanged(t *testing.T) {
 	response.EXPECT().OnPuzzleNotification(player, &puzzleIsUnchanged)
 	response.EXPECT().OnPuzzleNotification(player, &puzzleIsUnchanged)
 	response.EXPECT().OnCorrectWord(gomock.Any(), gomock.Any()).AnyTimes()
-	response.EXPECT().OnIncorrectWord(gomock.Any(), gomock.Any()).AnyTimes()
+	response.EXPECT().OnIncorrectWord(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
 
 	nona := game.NewGame(response, persistence, acceptanceDictionary)
 	nona.NewRound(0)
@@ -111,7 +111,7 @@ func TestPuzzles_IncorrectSolution_UserIsToldItIsIncorrect(t *testing.T) {
 	persistence := newFakePersistence()
 	response.EXPECT().OnPuzzleNotification(player, gomock.Any())
 	response.EXPECT().OnCorrectWord(player, gomock.Any()).Times(0)
-	response.EXPECT().OnIncorrectWord(player, incorrectWord)
+	response.EXPECT().OnIncorrectWord(player, incorrectWord, gomock.Any(), gomock.Any())
 
 	// Arrange
 	nona := game.NewGame(response, persistence, acceptanceDictionary)
@@ -178,4 +178,33 @@ func TestTwoPlayers_FirstPlayerSolvesIt_SecondPlayersPuzzleIsUnchanged(t *testin
 	// Here player1 has solved the first puzzle, but player2's puzzle should still be the first one.
 	nona.GiveMe(player2)
 	persistence.playerStateResolved(player2)
+}
+
+func TestPuzzles_WordAndPuzzleMismatch_UserIsToldWhatLettersMismatched(t *testing.T) {
+	// Assert
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	player := game.Player("U1")
+	word := game.Word("ABCZXY")
+	savedPuzzle := puzzleSaver{}
+
+	response := mock.NewMockResponse(mockCtrl)
+	persistence := newFakePersistence()
+	response.EXPECT().OnPuzzleNotification(player, &savedPuzzle)
+	response.EXPECT().OnCorrectWord(player, gomock.Any()).Times(0)
+
+	// Arrange
+	nona := game.NewGame(response, persistence, acceptanceDictionary)
+	nona.NewRound(0)
+	nona.GiveMe(player)
+	persistence.playerStateResolved(player)
+	// Here the player should have been notified of the puzzle.
+	// Calculate the difference between puzzle and word.
+	tooMany, tooFew := game.Diff(string(word), string(*savedPuzzle.puzzle))
+	response.EXPECT().OnIncorrectWord(player, gomock.Any(), tooMany, tooFew)
+
+	// Act
+	nona.TryWord(player, word)
+	persistence.playerStateResolved(player)
 }
