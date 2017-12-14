@@ -1,6 +1,7 @@
 package game_test
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/dandeliondeathray/nona/game"
@@ -99,6 +100,28 @@ func TestPuzzles_CorrectSolution_UserIsNotified(t *testing.T) {
 	persistence.playerStateResolved(player)
 }
 
+func TestPuzzles_CorrectSolutionButLowercase_UserIsNotified(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	puzzleMatch := puzzleSaver{}
+	player := game.Player("U1")
+	response := mock.NewMockResponse(mockCtrl)
+	persistence := newFakePersistence()
+	response.EXPECT().OnPuzzleNotification(player, &puzzleMatch)
+
+	nona := game.NewGame(response, persistence, acceptanceDictionary)
+	nona.NewRound(0)
+	nona.GiveMe(player)
+	persistence.playerStateResolved(player)
+	correctWord := game.Word(strings.ToLower(oracle.FindASolutionFor(*puzzleMatch.puzzle)))
+
+	response.EXPECT().OnCorrectWord(player, gomock.Any())
+
+	nona.TryWord(player, correctWord)
+	persistence.playerStateResolved(player)
+}
+
 func TestPuzzles_IncorrectSolution_UserIsToldItIsIncorrect(t *testing.T) {
 	// Assert
 	mockCtrl := gomock.NewController(t)
@@ -121,6 +144,38 @@ func TestPuzzles_IncorrectSolution_UserIsToldItIsIncorrect(t *testing.T) {
 
 	// Act
 	nona.TryWord(player, incorrectWord)
+	persistence.playerStateResolved(player)
+}
+
+func TestPuzzles_TryPuzzleAsSolutionInLowercase_NoMismatchingLetters(t *testing.T) {
+	// Assert
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	player := game.Player("U1")
+
+	puzzleMatch := puzzleSaver{}
+	response := mock.NewMockResponse(mockCtrl)
+	persistence := newFakePersistence()
+	response.EXPECT().OnPuzzleNotification(player, &puzzleMatch)
+	response.EXPECT().OnCorrectWord(player, gomock.Any()).Times(0)
+
+	// We want to ensure that the letter matching is done in a case insensitive way.
+	// Therefore, if we send in the puzzle in lowercase as a word, then (assuming the puzzle isn't)
+	// also a correct word, there should not be a mismatch.
+	response.EXPECT().OnIncorrectWord(player, gomock.Any(), "", "")
+
+	// Arrange
+	nona := game.NewGame(response, persistence, acceptanceDictionary)
+	nona.NewRound(0)
+	nona.GiveMe(player)
+	persistence.playerStateResolved(player)
+
+	// Here the player has been notified of the puzzle.
+	lowercaseSameAsPuzzle := game.Word(strings.ToLower(string(*puzzleMatch.puzzle)))
+
+	// Act
+	nona.TryWord(player, lowercaseSameAsPuzzle)
 	persistence.playerStateResolved(player)
 }
 
