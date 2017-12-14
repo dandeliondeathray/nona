@@ -25,5 +25,17 @@ func (r *SlackResponse) OnCorrectWord(player game.Player, word game.Word) {
 }
 
 func (r *SlackResponse) OnIncorrectWord(player game.Player, word game.Word, tooMany, tooFew string) {
-	r.ChOutgoing <- OutgoingMessage{player, "Inte korrekt"}
+	var message string
+	if tooMany == "" && tooFew == "" {
+		message = fmt.Sprintf("%s finns inte i ordlistan.", word)
+	} else {
+		message = fmt.Sprintf("%s matchar inte pusslet.", word)
+		if tooMany != "" {
+			message += fmt.Sprintf(" För många %s.", tooMany)
+		}
+		if tooFew != "" {
+			message += fmt.Sprintf(" För få %s.", tooFew)
+		}
+	}
+	r.ChOutgoing <- OutgoingMessage{player, message}
 }
