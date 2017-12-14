@@ -2,6 +2,7 @@ package game
 
 import (
 	"sort"
+	"strings"
 
 	"golang.org/x/text/unicode/norm"
 )
@@ -34,7 +35,7 @@ func NewSolutions(dictionary []string) *Solutions {
 // Helpers
 
 func normalize(s string) string {
-	return norm.NFKC.String(s)
+	return strings.ToUpper(norm.NFKC.String(s))
 }
 
 func normalizeWord(w Word) Word {

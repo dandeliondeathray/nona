@@ -78,3 +78,25 @@ func TestSolution_NonNormalPuzzleWithNormalWord_SolutionIsCorrect(t *testing.T) 
 		t.Fatalf("Word %s should be a correct solution for puzzle %s, even though the puzzle is not in normal form", normalWord, puzzle)
 	}
 }
+
+func TestSolution_LowercaseWord_SolutionIsCaseInsensitive(t *testing.T) {
+	solutions := game.NewSolutions(dictionary)
+
+	lowercaseWord := game.Word(norm.NFKC.String("pussgurka"))
+	puzzle := game.Puzzle(norm.NFKC.String("PUSSGURKA"))
+
+	if !solutions.Check(lowercaseWord, puzzle) {
+		t.Fatalf("Word %s should be correct, even though it's lower case", lowercaseWord)
+	}
+}
+
+func TestSolution_LowercasePuzzle_PuzzleIsCaseInsensitive(t *testing.T) {
+	solutions := game.NewSolutions(dictionary)
+
+	word := game.Word(norm.NFKC.String("PUSSGURKA"))
+	lowercasePuzzle := game.Puzzle(norm.NFKC.String("pussgurka"))
+
+	if !solutions.Check(word, lowercasePuzzle) {
+		t.Fatalf("Word %s should be correct, even though it's lower case", word)
+	}
+}
