@@ -43,25 +43,15 @@ func RunSlack(token string, nona *game.Game, chOutgoing <-chan OutgoingMessage) 
 	go rtm.ManageConnection()
 	go writeOutgoingMessages(chOutgoing, rtm)
 
-	// Wait for Hello event, which is how we know we're connected the first time and can get the
-	// id of the bot itself.
-	for msg := range rtm.IncomingEvents {
-		switch ev := msg.Data.(type) {
-		case *slack.HelloEvent:
-			break
-		default:
-			log.Printf("Ignoring event before Hello: %v", ev)
-		}
-	}
-	rtmInfo := rtm.GetInfo()
-	self := game.Player(rtmInfo.User.ID)
-	handler := NewNonaSlackHandler(nona, self)
+	var handler *NonaSlackHandler
 
 	for msg := range rtm.IncomingEvents {
 		log.Println("Event Received")
 		switch ev := msg.Data.(type) {
 		case *slack.HelloEvent:
-			// Ignore hello
+			rtmInfo := rtm.GetInfo()
+			self := game.Player(rtmInfo.User.ID)
+			handler = NewNonaSlackHandler(nona, self)
 
 		case *slack.ConnectedEvent:
 			log.Println("Infos:", ev.Info)
@@ -70,6 +60,10 @@ func RunSlack(token string, nona *game.Game, chOutgoing <-chan OutgoingMessage) 
 			//rtm.SendMessage(rtm.NewOutgoingMessage("Hello world", "#konsulatet"))
 
 		case *slack.MessageEvent:
+			if handler == nil {
+				log.Printf("Event %v was received before handler was initialized!", ev)
+				continue
+			}
 			log.Printf("Message: %v\n", ev)
 			msgEvent := msg.Data.(*slack.MessageEvent)
 			player := game.Player(msgEvent.User)
