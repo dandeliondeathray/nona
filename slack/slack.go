@@ -43,6 +43,20 @@ func RunSlack(token string, nona *game.Game, chOutgoing <-chan OutgoingMessage) 
 	go rtm.ManageConnection()
 	go writeOutgoingMessages(chOutgoing, rtm)
 
+	// Wait for Hello event, which is how we know we're connected the first time and can get the
+	// id of the bot itself.
+	for msg := range rtm.IncomingEvents {
+		switch ev := msg.Data.(type) {
+		case *slack.HelloEvent:
+			break
+		default:
+			log.Printf("Ignoring event before Hello: %v", ev)
+		}
+	}
+	rtmInfo := rtm.GetInfo()
+	self := game.Player(rtmInfo.User.ID)
+	handler := NewNonaSlackHandler(nona, self)
+
 	for msg := range rtm.IncomingEvents {
 		log.Println("Event Received")
 		switch ev := msg.Data.(type) {
@@ -60,11 +74,7 @@ func RunSlack(token string, nona *game.Game, chOutgoing <-chan OutgoingMessage) 
 			msgEvent := msg.Data.(*slack.MessageEvent)
 			player := game.Player(msgEvent.User)
 			channels.setReplyChannel(player, msgEvent.Channel)
-			if msgEvent.Text == "!gemig" {
-				nona.GiveMe(player)
-			} else {
-				nona.TryWord(player, game.Word(msgEvent.Text))
-			}
+			handler.OnMessage(player, msgEvent.Text)
 
 		case *slack.PresenceChangeEvent:
 			log.Printf("Presence Change: %v\n", ev)
