@@ -85,10 +85,6 @@ func isSwedishÅÄÖ(r rune) bool {
 	return strings.ContainsRune(åäö, r)
 }
 
-func isSeparator(r rune) bool {
-	return strings.ContainsRune(" -", r)
-}
-
 type inAnySet struct {
 	sets []runes.Set
 }
