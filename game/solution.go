@@ -3,7 +3,9 @@ package game
 import (
 	"sort"
 	"strings"
+	"unicode"
 
+	"golang.org/x/text/runes"
 	"golang.org/x/text/unicode/norm"
 )
 
@@ -35,7 +37,15 @@ func NewSolutions(dictionary []string) *Solutions {
 // Helpers
 
 func normalize(s string) string {
-	return strings.ToUpper(norm.NFKC.String(s))
+	decomposed := norm.NFKD.String(s)
+	åäöSet := runes.Predicate(isSwedishÅÄÖ)
+	diacritics := runes.In(unicode.Diacritic)
+	hyphenSet := runes.In(unicode.Hyphen)
+	spaceSet := runes.In(unicode.White_Space)
+	removeRuneSet := inAnySet{[]runes.Set{diacritics, hyphenSet, spaceSet}}
+	t := runes.If(åäöSet, nil, runes.Remove(removeRuneSet))
+	decomposedWithoutDiacritics := t.String(decomposed)
+	return strings.ToUpper(norm.NFKC.String(decomposedWithoutDiacritics))
 }
 
 func normalizeWord(w Word) Word {
@@ -64,4 +74,30 @@ func sortLetters(word string) string {
 	runes := runeSlice(word)
 	sort.Sort(runes)
 	return string(runes)
+}
+
+//
+// Transforming characters
+//
+
+func isSwedishÅÄÖ(r rune) bool {
+	åäö := norm.NFKD.String("ÅÄÖ")
+	return strings.ContainsRune(åäö, r)
+}
+
+func isSeparator(r rune) bool {
+	return strings.ContainsRune(" -", r)
+}
+
+type inAnySet struct {
+	sets []runes.Set
+}
+
+func (s inAnySet) Contains(r rune) bool {
+	for _, runeSet := range s.sets {
+		if runeSet.Contains(r) {
+			return true
+		}
+	}
+	return false
 }

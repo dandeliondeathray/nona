@@ -7,7 +7,7 @@ import (
 	"golang.org/x/text/unicode/norm"
 )
 
-var dictionary = []string{"PUSSGURKA", "DATORSPEL", "ABCDEFÅÄÖ"}
+var dictionary = []string{"PUSSGURKA", "DATORSPEL", "ABCDEFÅÄÖ", "Å", "Ä", "Ö", "TETEATETE"}
 
 func TestSolution_ProperWordAndPuzzleMatch_SolutionIsCorrect(t *testing.T) {
 	solutions := game.NewSolutions(dictionary)
@@ -98,5 +98,71 @@ func TestSolution_LowercasePuzzle_PuzzleIsCaseInsensitive(t *testing.T) {
 
 	if !solutions.Check(word, lowercasePuzzle) {
 		t.Fatalf("Word %s should be correct, even though it's lower case", word)
+	}
+}
+
+func TestSpecialCharacters_SpaceInWord_SpaceIsRemovedWhenComparing(t *testing.T) {
+	solutions := game.NewSolutions(dictionary)
+
+	word := game.Word("PUSS GURKA")
+	puzzle := game.Puzzle("PUSSGURKA")
+
+	if !solutions.Check(word, puzzle) {
+		t.Fatalf("Word %s should be correct, even though it has a space in it", word)
+	}
+}
+
+func TestSpecialCharacters_Accents_AccentsAreRemoved(t *testing.T) {
+	solutions := game.NewSolutions(dictionary)
+
+	word := game.Word("TÊTEÀTÊTE")
+	puzzle := game.Puzzle("TETEATETE")
+
+	if !solutions.Check(word, puzzle) {
+		t.Fatalf("Word %s should a correct solution for puzzle %s, even with the accents", word, puzzle)
+	}
+}
+
+func TestSpecialCharacters_Dash_DashesAreRemoved(t *testing.T) {
+	solutions := game.NewSolutions(dictionary)
+
+	word := game.Word("DATOR-SPEL")
+	puzzle := game.Puzzle("DATORSPEL")
+
+	if !solutions.Check(word, puzzle) {
+		t.Fatalf("Word %s should a correct solution for puzzle %s, even with the dash", word, puzzle)
+	}
+}
+
+func TestSpecialCharacters_SwedishCharacterÅ_IsNotTheSameWithoutDiacritic(t *testing.T) {
+	solutions := game.NewSolutions(dictionary)
+
+	word := game.Word("Å")
+	puzzle := game.Puzzle("A")
+
+	if solutions.Check(word, puzzle) {
+		t.Fatalf("Word %s should not be a correct solution for %s, since they're different in Swedish", word, puzzle)
+	}
+}
+
+func TestSpecialCharacters_SwedishCharacterÄ_IsNotTheSameWithoutDiacritic(t *testing.T) {
+	solutions := game.NewSolutions(dictionary)
+
+	word := game.Word("Ä")
+	puzzle := game.Puzzle("A")
+
+	if solutions.Check(word, puzzle) {
+		t.Fatalf("Word %s should not be a correct solution for %s, since they're different in Swedish", word, puzzle)
+	}
+}
+
+func TestSpecialCharacters_SwedishCharacterÖ_IsNotTheSameWithoutDiacritic(t *testing.T) {
+	solutions := game.NewSolutions(dictionary)
+
+	word := game.Word("Ö")
+	puzzle := game.Puzzle("O")
+
+	if solutions.Check(word, puzzle) {
+		t.Fatalf("Word %s should not be a correct solution for %s, since they're different in Swedish", word, puzzle)
 	}
 }
