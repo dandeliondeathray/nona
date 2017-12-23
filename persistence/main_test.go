@@ -8,6 +8,8 @@ import (
 	"os/exec"
 	"testing"
 	"time"
+
+	"github.com/dandeliondeathray/nona/persistence"
 )
 
 func runEtcd() *exec.Cmd {
@@ -51,13 +53,71 @@ func runWithEtcdContainer(m *testing.M) {
 
 func TestMain(m *testing.M) {
 	flag.Parse()
-	if !testing.Short() {
-		runWithEtcdContainer(m)
-		os.Exit(0)
-	} else {
+	if testing.Short() {
 		os.Exit(m.Run())
+	} else {
+		runWithEtcdContainer(m)
 	}
 }
 
-func TestRound_NewRoundSet_SameSeedReturnedInGet(t *testing.T) {
+type mockAsyncRecoveryHandler struct {
+	expectedOnRoundRecovered  *int64
+	unmatchedOnRoundRecovered []int64
+	chCallReceived            chan int64
+	timeout                   time.Duration
+}
+
+func newMockAsyncRecoveryHandler(timeout time.Duration) *mockAsyncRecoveryHandler {
+	return &mockAsyncRecoveryHandler{nil, make([]int64, 0), make(chan int64, 5), timeout}
+}
+
+func (r *mockAsyncRecoveryHandler) OnRoundRecovered(seed int64) {
+	r.chCallReceived <- seed
+}
+
+func (r *mockAsyncRecoveryHandler) ExpectOnRoundRecovered(seed int64) {
+	r.expectedOnRoundRecovered = &seed
+}
+
+func (r *mockAsyncRecoveryHandler) Await() error {
+	select {
+	case seed := <-r.chCallReceived:
+		if r.expectedOnRoundRecovered == nil {
+			r.unmatchedOnRoundRecovered = append(r.unmatchedOnRoundRecovered, seed)
+		} else if seed == *r.expectedOnRoundRecovered {
+			r.expectedOnRoundRecovered = nil
+		} else {
+			r.unmatchedOnRoundRecovered = append(r.unmatchedOnRoundRecovered, seed)
+		}
+	case <-time.After(r.timeout):
+		break
+	}
+
+	if r.expectedOnRoundRecovered != nil {
+		return fmt.Errorf("No match for expected seed %d. Unexpected calls: %v", *r.expectedOnRoundRecovered, r.unmatchedOnRoundRecovered)
+	} else if len(r.unmatchedOnRoundRecovered) > 0 {
+		return fmt.Errorf("Unmatched calls to OnRoundRecovery: %v", r.unmatchedOnRoundRecovered)
+	}
+	return nil
+}
+
+func TestRecoverRound_RoundSet_RoundIsRecovered(t *testing.T) {
+	if testing.Short() {
+		return
+	}
+
+	recoveryHandler := newMockAsyncRecoveryHandler(time.Duration(1) * time.Second)
+	seed := int64(42)
+	recoveryHandler.ExpectOnRoundRecovered(seed)
+
+	// Arrange the persistence to have a current round with seed 42.
+	p := persistence.NewPersistence("konsulatet")
+	p.NewRound(42)
+
+	p2 := persistence.NewPersistence("konsulatet")
+	p2.Recover(recoveryHandler)
+	err := recoveryHandler.Await()
+	if err != nil {
+		t.Fatalf("%v", err)
+	}
 }
