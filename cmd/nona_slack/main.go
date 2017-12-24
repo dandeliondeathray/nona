@@ -13,6 +13,7 @@ import (
 
 type inMemoryPersistence struct {
 	states map[game.Player]game.PlayerState
+	seed   int64
 }
 
 func (p *inMemoryPersistence) ResolvePlayerState(player game.Player, resolution game.PlayerStateResolution) {
@@ -34,6 +35,10 @@ func (p *inMemoryPersistence) PlayerSolvedPuzzle(player game.Player, newPuzzleIn
 	p.states[player] = state
 }
 
+func (p *inMemoryPersistence) StoreNewRound(seed int64) {
+	p.seed = seed
+}
+
 func main() {
 	token := os.Getenv("SLACK_TOKEN")
 	if token == "" {
@@ -52,7 +57,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("Error when reading dictionary: %v", err)
 	}
-	persistence := inMemoryPersistence{make(map[game.Player]game.PlayerState)}
+	persistence := inMemoryPersistence{make(map[game.Player]game.PlayerState), 0}
 	nona := game.NewGame(&response, &persistence, dictionary)
 	nona.NewRound(time.Now().Unix())
 

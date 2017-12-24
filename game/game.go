@@ -20,6 +20,7 @@ type Game struct {
 // NewRound starts a new round.
 func (g *Game) NewRound(seed int64) {
 	g.puzzleChain = chain.NewPuzzles(g.dictionary, seed)
+	g.persistence.StoreNewRound(seed)
 }
 
 // GiveMe requests a puzzle notification for a player.

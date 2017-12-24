@@ -19,7 +19,7 @@ type Persistence struct {
 	team string
 }
 
-func (p *Persistence) NewRound(seed int64) {
+func (p *Persistence) StoreNewRound(seed int64) {
 	err := p.setCurrentRound(seed)
 	if err != nil {
 		log.Printf("Failed to set new round: %v", err)

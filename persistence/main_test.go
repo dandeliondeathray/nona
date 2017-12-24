@@ -112,7 +112,7 @@ func TestRecoverRound_RoundSet_RoundIsRecovered(t *testing.T) {
 
 	// Arrange the persistence to have a current round with seed 42.
 	p := persistence.NewPersistence("konsulatet")
-	p.NewRound(42)
+	p.StoreNewRound(42)
 
 	p2 := persistence.NewPersistence("konsulatet")
 	p2.Recover(recoveryHandler)

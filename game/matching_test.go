@@ -82,6 +82,7 @@ func (p *puzzleSaver) String() string {
 type fakePersistence struct {
 	resolutions map[game.Player]game.PlayerStateResolution
 	states      map[game.Player]game.PlayerState
+	seed        int64
 }
 
 func (p *fakePersistence) ResolvePlayerState(player game.Player, resolution game.PlayerStateResolution) {
@@ -101,6 +102,10 @@ func (p *fakePersistence) PlayerSolvedPuzzle(player game.Player, newPuzzleIndex 
 	p.states[player] = state
 }
 
+func (p *fakePersistence) StoreNewRound(seed int64) {
+	p.seed = seed
+}
+
 func (p *fakePersistence) playerStateResolved(player game.Player) {
 	resolution, ok := p.resolutions[player]
 	if !ok {
@@ -116,5 +121,6 @@ func (p *fakePersistence) playerStateResolved(player game.Player) {
 func newFakePersistence() *fakePersistence {
 	return &fakePersistence{
 		make(map[game.Player]game.PlayerStateResolution),
-		make(map[game.Player]game.PlayerState)}
+		make(map[game.Player]game.PlayerState),
+		0}
 }

@@ -52,3 +52,13 @@ func (m *MockPersistence) ResolvePlayerState(arg0 game.Player, arg1 game.PlayerS
 func (mr *MockPersistenceMockRecorder) ResolvePlayerState(arg0, arg1 interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ResolvePlayerState", reflect.TypeOf((*MockPersistence)(nil).ResolvePlayerState), arg0, arg1)
 }
+
+// StoreNewRound mocks base method
+func (m *MockPersistence) StoreNewRound(arg0 int64) {
+	m.ctrl.Call(m, "StoreNewRound", arg0)
+}
+
+// StoreNewRound indicates an expected call of StoreNewRound
+func (mr *MockPersistenceMockRecorder) StoreNewRound(arg0 interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StoreNewRound", reflect.TypeOf((*MockPersistence)(nil).StoreNewRound), arg0)
+}
