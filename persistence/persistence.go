@@ -7,6 +7,8 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/dandeliondeathray/nona/game"
+
 	"github.com/coreos/etcd/clientv3"
 )
 
@@ -24,6 +26,13 @@ func (p *Persistence) StoreNewRound(seed int64) {
 	if err != nil {
 		log.Printf("Failed to set new round: %v", err)
 	}
+}
+
+func (p *Persistence) ResolvePlayerState(player game.Player, resolution game.PlayerStateResolution) {
+	f := func() {
+		resolution.PlayerStateResolved(game.PlayerState{0})
+	}
+	go f()
 }
 
 func (p *Persistence) Recover(handler RecoveryHandler) error {
