@@ -30,7 +30,22 @@ func (p *Persistence) StoreNewRound(seed int64) {
 
 func (p *Persistence) ResolvePlayerState(player game.Player, resolution game.PlayerStateResolution) {
 	f := func() {
-		resolution.PlayerStateResolved(game.PlayerState{0})
+		playerState, err := p.getPlayerState(player)
+		if err == nil {
+			resolution.PlayerStateResolved(game.PlayerState{PuzzleIndex: playerState})
+		} else {
+			log.Println("Error when getting player state: ", err)
+		}
+	}
+	go f()
+}
+
+func (p *Persistence) PlayerSolvedPuzzle(player game.Player, newPuzzleIndex int) {
+	f := func() {
+		err := p.setPlayerState(player, newPuzzleIndex)
+		if err != nil {
+			log.Println("Error when getting player state: ", err)
+		}
 	}
 	go f()
 }
@@ -46,11 +61,15 @@ func (p *Persistence) Recover(handler RecoveryHandler) error {
 	return nil
 }
 
-func (p *Persistence) getCurrentRound() (int64, error) {
-	cli, err := clientv3.New(clientv3.Config{
+func (p *Persistence) getClient() (*clientv3.Client, error) {
+	return clientv3.New(clientv3.Config{
 		Endpoints:   []string{"localhost:2379", "localhost:22379", "localhost:32379"},
 		DialTimeout: 5 * time.Second,
 	})
+}
+
+func (p *Persistence) getCurrentRound() (int64, error) {
+	cli, err := p.getClient()
 	if err != nil {
 		return 0, err
 	}
@@ -73,10 +92,7 @@ func (p *Persistence) getCurrentRound() (int64, error) {
 }
 
 func (p *Persistence) setCurrentRound(seed int64) error {
-	cli, err := clientv3.New(clientv3.Config{
-		Endpoints:   []string{"localhost:2379", "localhost:22379", "localhost:32379"},
-		DialTimeout: 5 * time.Second,
-	})
+	cli, err := p.getClient()
 	if err != nil {
 		return err
 	}
@@ -85,6 +101,51 @@ func (p *Persistence) setCurrentRound(seed int64) error {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(1)*time.Second)
 	kvc := clientv3.NewKV(cli)
 	resp, err := kvc.Put(ctx, fmt.Sprintf("%s/current_round", p.team), fmt.Sprintf("%d", seed))
+	cancel()
+	if err != nil {
+		return err
+	}
+	// use the response
+	log.Printf("Put Response is: %v", resp)
+	return nil
+}
+
+func (p *Persistence) getPlayerState(player game.Player) (int, error) {
+	cli, err := p.getClient()
+	if err != nil {
+		return 0, err
+	}
+	defer cli.Close()
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(1)*time.Second)
+	kvc := clientv3.NewKV(cli)
+	resp, err := kvc.Get(ctx, fmt.Sprintf("%s/%s/index", p.team, player))
+	cancel()
+	if err != nil {
+		return 0, err
+	}
+	// use the response
+	log.Printf("Player state Response is: %v", resp)
+	if len(resp.Kvs) == 0 {
+		return 0, nil
+	}
+	index, err := strconv.Atoi(string(resp.Kvs[0].Value))
+	if err != nil {
+		return 0, err
+	}
+	return index, nil
+}
+
+func (p *Persistence) setPlayerState(player game.Player, index int) error {
+	cli, err := p.getClient()
+	if err != nil {
+		return err
+	}
+	defer cli.Close()
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(1)*time.Second)
+	kvc := clientv3.NewKV(cli)
+	resp, err := kvc.Put(ctx, fmt.Sprintf("%s/%s/index", p.team, player), fmt.Sprintf("%d", index))
 	cancel()
 	if err != nil {
 		return err

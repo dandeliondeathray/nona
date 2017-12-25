@@ -27,6 +27,49 @@ func TestPersistPlayerState_NewPlayer_PlayerStartsAtIndexZero(t *testing.T) {
 	}
 }
 
+func TestPersistPlayerState_PlayerSolvedPuzzleNewIndex42_ResolvingPlayerStateTo42(t *testing.T) {
+	if testing.Short() {
+		return
+	}
+
+	resolution := newAsyncPlayerStateResolution()
+	player := game.Player("U1")
+
+	p := persistence.NewPersistence("konsulatet")
+	p.PlayerSolvedPuzzle(player, 42)
+
+	// Act
+	p.ResolvePlayerState(player, resolution)
+
+	err := resolution.AwaitPuzzleIndex(42)
+	if err != nil {
+		t.Fatalf("%v", err)
+	}
+}
+
+func TestPersistPlayerState_PersistStateWithOneInstance_ResolveTheSameStateWithAnother(t *testing.T) {
+	if testing.Short() {
+		return
+	}
+
+	player := game.Player("U2")
+
+	p1 := persistence.NewPersistence("konsulatet")
+	p1.PlayerSolvedPuzzle(player, 43)
+
+	time.Sleep(time.Duration(1) * time.Second)
+
+	// Act
+	resolution := newAsyncPlayerStateResolution()
+	p2 := persistence.NewPersistence("konsulatet")
+	p2.ResolvePlayerState(player, resolution)
+
+	err := resolution.AwaitPuzzleIndex(43)
+	if err != nil {
+		t.Fatalf("%v", err)
+	}
+}
+
 // asyncPlayerStateResolution lets us test that a player state is resolved by Persistence.
 type asyncPlayerStateResolution struct {
 	chPuzzleIndex chan int
