@@ -19,13 +19,16 @@ type RecoveryHandler interface {
 
 type Persistence struct {
 	team string
+	seed int64
 }
 
 func (p *Persistence) StoreNewRound(seed int64) {
 	err := p.setCurrentRound(seed)
 	if err != nil {
 		log.Printf("Failed to set new round: %v", err)
+		return
 	}
+	p.seed = seed
 }
 
 func (p *Persistence) ResolvePlayerState(player game.Player, resolution game.PlayerStateResolution) {
@@ -119,7 +122,7 @@ func (p *Persistence) getPlayerState(player game.Player) (int, error) {
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(1)*time.Second)
 	kvc := clientv3.NewKV(cli)
-	resp, err := kvc.Get(ctx, fmt.Sprintf("%s/%s/index", p.team, player))
+	resp, err := kvc.Get(ctx, fmt.Sprintf("%s/%s/%d/index", p.team, player, p.seed))
 	cancel()
 	if err != nil {
 		return 0, err
@@ -145,7 +148,7 @@ func (p *Persistence) setPlayerState(player game.Player, index int) error {
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(1)*time.Second)
 	kvc := clientv3.NewKV(cli)
-	resp, err := kvc.Put(ctx, fmt.Sprintf("%s/%s/index", p.team, player), fmt.Sprintf("%d", index))
+	resp, err := kvc.Put(ctx, fmt.Sprintf("%s/%s/%d/index", p.team, player, p.seed), fmt.Sprintf("%d", index))
 	cancel()
 	if err != nil {
 		return err
@@ -156,5 +159,5 @@ func (p *Persistence) setPlayerState(player game.Player, index int) error {
 }
 
 func NewPersistence(team string) *Persistence {
-	return &Persistence{team}
+	return &Persistence{team, 0}
 }

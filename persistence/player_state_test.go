@@ -37,6 +37,7 @@ func TestPersistPlayerState_PlayerSolvedPuzzleNewIndex42_ResolvingPlayerStateTo4
 
 	p := persistence.NewPersistence("konsulatet")
 	p.PlayerSolvedPuzzle(player, 42)
+	time.Sleep(time.Duration(1) * time.Second)
 
 	// Act
 	p.ResolvePlayerState(player, resolution)
@@ -65,6 +66,32 @@ func TestPersistPlayerState_PersistStateWithOneInstance_ResolveTheSameStateWithA
 	p2.ResolvePlayerState(player, resolution)
 
 	err := resolution.AwaitPuzzleIndex(43)
+	if err != nil {
+		t.Fatalf("%v", err)
+	}
+}
+
+func TestPersistPlayerState_NewRound_PlayerStateIsReset(t *testing.T) {
+	if testing.Short() {
+		return
+	}
+
+	player := game.Player("U3")
+
+	p := persistence.NewPersistence("konsulatet")
+	p.StoreNewRound(0)
+	p.PlayerSolvedPuzzle(player, 43)
+
+	time.Sleep(time.Duration(1) * time.Second)
+
+	// Act
+	resolution := newAsyncPlayerStateResolution()
+	p.StoreNewRound(1)
+	time.Sleep(time.Duration(1) * time.Second)
+
+	p.ResolvePlayerState(player, resolution)
+
+	err := resolution.AwaitPuzzleIndex(0)
 	if err != nil {
 		t.Fatalf("%v", err)
 	}
