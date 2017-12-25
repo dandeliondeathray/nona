@@ -10,4 +10,5 @@ type Response interface {
 	OnPuzzleNotification(player Player, puzzle Puzzle)
 	OnCorrectWord(player Player, word Word)
 	OnIncorrectWord(player Player, word Word, tooMany, tooFew string)
+	OnNoRound(player Player)
 }

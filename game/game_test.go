@@ -263,3 +263,38 @@ func TestPuzzles_WordAndPuzzleMismatch_UserIsToldWhatLettersMismatched(t *testin
 	nona.TryWord(player, word)
 	persistence.playerStateResolved(player)
 }
+
+//
+// No round set
+//
+func TestNoRoundSet_GiveMeCommand_ErrorResponse(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	player := game.Player("U1")
+	response := mock.NewMockResponse(mockCtrl)
+	persistence := newFakePersistence()
+
+	// Assert
+	response.EXPECT().OnNoRound(player)
+
+	nona := game.NewGame(response, persistence, acceptanceDictionary)
+	nona.GiveMe(player)
+}
+
+func TestNoRoundSet_CheckSolution_ErrorResponse(t *testing.T) {
+	// Arrange
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	player := game.Player("U1")
+	response := mock.NewMockResponse(mockCtrl)
+	persistence := newFakePersistence()
+
+	// Assert
+	response.EXPECT().OnNoRound(player)
+
+	// Act
+	nona := game.NewGame(response, persistence, acceptanceDictionary)
+	nona.TryWord(player, game.Word("SOMEWORD"))
+}

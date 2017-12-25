@@ -25,6 +25,10 @@ func (g *Game) NewRound(seed int64) {
 
 // GiveMe requests a puzzle notification for a player.
 func (g *Game) GiveMe(player Player) {
+	if !g.isRoundActive() {
+		g.response.OnNoRound(player)
+		return
+	}
 	notifyPlayerOfPuzzle := puzzleNotification{
 		player:      player,
 		puzzleChain: g.puzzleChain,
@@ -35,6 +39,10 @@ func (g *Game) GiveMe(player Player) {
 
 // TryWord checks if the supplied word is a correct solution for the current puzzle.
 func (g *Game) TryWord(player Player, word Word) {
+	if !g.isRoundActive() {
+		g.response.OnNoRound(player)
+		return
+	}
 	checkSolution := checkWord{
 		player:      player,
 		word:        word,
@@ -43,6 +51,11 @@ func (g *Game) TryWord(player Player, word Word) {
 		puzzleChain: g.puzzleChain,
 		response:    g.response}
 	g.persistence.ResolvePlayerState(player, &checkSolution)
+}
+
+// isRoundActive returns true if there is a current round, false if no round has been started.
+func (g *Game) isRoundActive() bool {
+	return g.puzzleChain != nil
 }
 
 // NewGame creates a new game type, given a dictionary.

@@ -39,3 +39,7 @@ func (r *SlackResponse) OnIncorrectWord(player game.Player, word game.Word, tooM
 	}
 	r.ChOutgoing <- OutgoingMessage{player, message}
 }
+
+func (r *SlackResponse) OnNoRound(player game.Player) {
+	r.ChOutgoing <- OutgoingMessage{player, "No round has been started."}
+}

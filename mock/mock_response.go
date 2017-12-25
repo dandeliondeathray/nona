@@ -53,6 +53,16 @@ func (mr *MockResponseMockRecorder) OnIncorrectWord(arg0, arg1, arg2, arg3 inter
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OnIncorrectWord", reflect.TypeOf((*MockResponse)(nil).OnIncorrectWord), arg0, arg1, arg2, arg3)
 }
 
+// OnNoRound mocks base method
+func (m *MockResponse) OnNoRound(arg0 game.Player) {
+	m.ctrl.Call(m, "OnNoRound", arg0)
+}
+
+// OnNoRound indicates an expected call of OnNoRound
+func (mr *MockResponseMockRecorder) OnNoRound(arg0 interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OnNoRound", reflect.TypeOf((*MockResponse)(nil).OnNoRound), arg0)
+}
+
 // OnPuzzleNotification mocks base method
 func (m *MockResponse) OnPuzzleNotification(arg0 game.Player, arg1 game.Puzzle) {
 	m.ctrl.Call(m, "OnPuzzleNotification", arg0, arg1)
