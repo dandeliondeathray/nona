@@ -111,10 +111,10 @@ func TestRecoverRound_RoundSet_RoundIsRecovered(t *testing.T) {
 	recoveryHandler.ExpectOnRoundRecovered(seed)
 
 	// Arrange the persistence to have a current round with seed 42.
-	p := persistence.NewPersistence("konsulatet")
+	p := persistence.NewPersistence("konsulatet", testingEndpoints)
 	p.StoreNewRound(42)
 
-	p2 := persistence.NewPersistence("konsulatet")
+	p2 := persistence.NewPersistence("konsulatet", testingEndpoints)
 	p2.Recover(recoveryHandler)
 	err := recoveryHandler.Await()
 	if err != nil {

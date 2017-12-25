@@ -10,6 +10,8 @@ import (
 	"github.com/dandeliondeathray/nona/persistence"
 )
 
+var testingEndpoints = []string{"localhost:2379", "localhost:22379", "localhost:32379"}
+
 func TestPersistPlayerState_NewPlayer_PlayerStartsAtIndexZero(t *testing.T) {
 	if testing.Short() {
 		return
@@ -18,7 +20,7 @@ func TestPersistPlayerState_NewPlayer_PlayerStartsAtIndexZero(t *testing.T) {
 	resolution := newAsyncPlayerStateResolution()
 	player := game.Player("UNEWPLAYER")
 
-	p := persistence.NewPersistence("konsulatet")
+	p := persistence.NewPersistence("konsulatet", testingEndpoints)
 	p.ResolvePlayerState(player, resolution)
 
 	err := resolution.AwaitPuzzleIndex(0)
@@ -35,7 +37,7 @@ func TestPersistPlayerState_PlayerSolvedPuzzleNewIndex42_ResolvingPlayerStateTo4
 	resolution := newAsyncPlayerStateResolution()
 	player := game.Player("U1")
 
-	p := persistence.NewPersistence("konsulatet")
+	p := persistence.NewPersistence("konsulatet", testingEndpoints)
 	p.PlayerSolvedPuzzle(player, 42)
 	time.Sleep(time.Duration(1) * time.Second)
 
@@ -55,14 +57,14 @@ func TestPersistPlayerState_PersistStateWithOneInstance_ResolveTheSameStateWithA
 
 	player := game.Player("U2")
 
-	p1 := persistence.NewPersistence("konsulatet")
+	p1 := persistence.NewPersistence("konsulatet", testingEndpoints)
 	p1.PlayerSolvedPuzzle(player, 43)
 
 	time.Sleep(time.Duration(1) * time.Second)
 
 	// Act
 	resolution := newAsyncPlayerStateResolution()
-	p2 := persistence.NewPersistence("konsulatet")
+	p2 := persistence.NewPersistence("konsulatet", testingEndpoints)
 	p2.ResolvePlayerState(player, resolution)
 
 	err := resolution.AwaitPuzzleIndex(43)
@@ -78,7 +80,7 @@ func TestPersistPlayerState_NewRound_PlayerStateIsReset(t *testing.T) {
 
 	player := game.Player("U3")
 
-	p := persistence.NewPersistence("konsulatet")
+	p := persistence.NewPersistence("konsulatet", testingEndpoints)
 	p.StoreNewRound(0)
 	p.PlayerSolvedPuzzle(player, 43)
 

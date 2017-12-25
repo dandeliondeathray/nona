@@ -18,8 +18,9 @@ type RecoveryHandler interface {
 }
 
 type Persistence struct {
-	team string
-	seed int64
+	team      string
+	seed      int64
+	endpoints []string
 }
 
 func (p *Persistence) StoreNewRound(seed int64) {
@@ -66,7 +67,7 @@ func (p *Persistence) Recover(handler RecoveryHandler) error {
 
 func (p *Persistence) getClient() (*clientv3.Client, error) {
 	return clientv3.New(clientv3.Config{
-		Endpoints:   []string{"localhost:2379", "localhost:22379", "localhost:32379"},
+		Endpoints:   p.endpoints,
 		DialTimeout: 5 * time.Second,
 	})
 }
@@ -158,6 +159,6 @@ func (p *Persistence) setPlayerState(player game.Player, index int) error {
 	return nil
 }
 
-func NewPersistence(team string) *Persistence {
-	return &Persistence{team, 0}
+func NewPersistence(team string, endpoints []string) *Persistence {
+	return &Persistence{team, 0, endpoints}
 }
