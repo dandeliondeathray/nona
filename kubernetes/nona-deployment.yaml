@@ -20,6 +20,10 @@ spec:
         env:
           - name: DICTIONARY
             value: /dictionary/dictionary.txt
+          - name: TEAM
+            value: konsulatet
+          - name: PERSISTENCE_ENDPOINTS
+            value: etcd-1:2879,etcd-1:4001
           - name: SLACK_TOKEN
             valueFrom:
               secretKeyRef:

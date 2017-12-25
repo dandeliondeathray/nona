@@ -265,7 +265,7 @@ func TestPuzzles_WordAndPuzzleMismatch_UserIsToldWhatLettersMismatched(t *testin
 }
 
 //
-// No round set
+// Round recovery
 //
 func TestNoRoundSet_GiveMeCommand_ErrorResponse(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
@@ -297,4 +297,22 @@ func TestNoRoundSet_CheckSolution_ErrorResponse(t *testing.T) {
 	// Act
 	nona := game.NewGame(response, persistence, acceptanceDictionary)
 	nona.TryWord(player, game.Word("SOMEWORD"))
+}
+
+func TestRoundIsRecovered_GiveMeCommand_PuzzleReturned(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	seed := int64(42)
+	player := game.Player("U1")
+	response := mock.NewMockResponse(mockCtrl)
+	persistence := newFakePersistence()
+
+	// Assert
+	response.EXPECT().OnPuzzleNotification(gomock.Any(), gomock.Any())
+
+	nona := game.NewGame(response, persistence, acceptanceDictionary)
+	nona.OnRoundRecovered(seed)
+	nona.GiveMe(player)
+	persistence.playerStateResolved(player)
 }

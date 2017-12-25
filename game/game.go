@@ -53,6 +53,11 @@ func (g *Game) TryWord(player Player, word Word) {
 	g.persistence.ResolvePlayerState(player, &checkSolution)
 }
 
+// OnRoundRecovered is called when the persistence has recovered the current round state.
+func (g *Game) OnRoundRecovered(seed int64) {
+	g.puzzleChain = chain.NewPuzzles(g.dictionary, seed)
+}
+
 // isRoundActive returns true if there is a current round, false if no round has been started.
 func (g *Game) isRoundActive() bool {
 	return g.puzzleChain != nil
