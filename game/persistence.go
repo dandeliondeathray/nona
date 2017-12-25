@@ -1,6 +1,6 @@
 package game
 
-//go:generate mockgen -destination=../mock/mock_persistence.go -package=mock github.com/dandeliondeathray/nona/game Persistence
+//go:generate mockgen -destination=../mock/mock_game_persistence.go -package=mock github.com/dandeliondeathray/nona/game Persistence
 
 // PlayerStateResolution is called when a players state has been fetched from the persistence
 // layer.
