@@ -94,6 +94,9 @@ func (p *Persistence) getCurrentRound() (int64, error) {
 	}
 	// use the response
 	log.Printf("Get Response is: %v", resp)
+	if len(resp.Kvs) == 0 {
+		return 0, fmt.Errorf("No round set")
+	}
 	seed, err := strconv.ParseInt(string(resp.Kvs[0].Value), 10, 64)
 	if err != nil {
 		return 0, err

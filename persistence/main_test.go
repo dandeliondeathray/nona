@@ -128,3 +128,24 @@ func TestRecoverRound_RoundSet_RoundIsRecovered(t *testing.T) {
 		t.Fatalf("Recovery failed")
 	}
 }
+
+func TestRecoverRound_RoundNotSetForTeam_DoneChannelReturnsFalse(t *testing.T) {
+	if testing.Short() {
+		return
+	}
+
+	mockCtrl := gomock.NewController(t)
+	recoveryHandler := mock.NewMockRecoveryHandler(mockCtrl)
+	recoveryHandler.EXPECT().OnRoundRecovered(gomock.Any()).Times(0)
+
+	done := make(chan bool, 1)
+
+	// Arrange the persistence to have a current round with seed 42.
+	p := persistence.NewPersistence("newteam", testingEndpoints)
+	p.Recover(recoveryHandler, done)
+	success := <-done
+
+	if success {
+		t.Fatalf("Recovery succeeded, even though it should not have")
+	}
+}
