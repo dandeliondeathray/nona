@@ -9,7 +9,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/dandeliondeathray/nona/mock"
 	"github.com/dandeliondeathray/nona/persistence"
+	"github.com/golang/mock/gomock"
 )
 
 func runEtcd() *exec.Cmd {
@@ -106,18 +108,23 @@ func TestRecoverRound_RoundSet_RoundIsRecovered(t *testing.T) {
 		return
 	}
 
-	recoveryHandler := newMockAsyncRecoveryHandler(time.Duration(1) * time.Second)
 	seed := int64(42)
-	recoveryHandler.ExpectOnRoundRecovered(seed)
+
+	mockCtrl := gomock.NewController(t)
+	recoveryHandler := mock.NewMockRecoveryHandler(mockCtrl)
+	recoveryHandler.EXPECT().OnRoundRecovered(seed)
+
+	done := make(chan bool, 1)
 
 	// Arrange the persistence to have a current round with seed 42.
 	p := persistence.NewPersistence("konsulatet", testingEndpoints)
 	p.StoreNewRound(42)
 
 	p2 := persistence.NewPersistence("konsulatet", testingEndpoints)
-	p2.Recover(recoveryHandler)
-	err := recoveryHandler.Await()
-	if err != nil {
-		t.Fatalf("%v", err)
+	p2.Recover(recoveryHandler, done)
+	success := <-done
+
+	if !success {
+		t.Fatalf("Recovery failed")
 	}
 }

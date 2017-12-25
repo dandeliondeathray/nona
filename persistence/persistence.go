@@ -12,6 +12,8 @@ import (
 	"github.com/coreos/etcd/clientv3"
 )
 
+//go:generate mockgen -destination=../mock/mock_persistence.go -package=mock github.com/dandeliondeathray/nona/persistence RecoveryHandler
+
 // RecoveryHandler handles recovery from persisted state, after a restart.
 type RecoveryHandler interface {
 	OnRoundRecovered(seed int64)
@@ -54,15 +56,19 @@ func (p *Persistence) PlayerSolvedPuzzle(player game.Player, newPuzzleIndex int)
 	go f()
 }
 
-func (p *Persistence) Recover(handler RecoveryHandler) error {
-	log.Printf("Recovering round information for team %s", p.team)
-	seed, err := p.getCurrentRound()
-	if err != nil {
-		log.Printf("Failed to recover round: %v", err)
-		return err
+func (p *Persistence) Recover(handler RecoveryHandler, done chan<- bool) {
+	f := func() {
+		log.Printf("Recovering round information for team %s", p.team)
+		seed, err := p.getCurrentRound()
+		if err != nil {
+			log.Printf("Failed to recover round: %v", err)
+			done <- false
+		} else {
+			handler.OnRoundRecovered(seed)
+			done <- true
+		}
 	}
-	handler.OnRoundRecovered(seed)
-	return nil
+	go f()
 }
 
 func (p *Persistence) getClient() (*clientv3.Client, error) {

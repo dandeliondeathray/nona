@@ -1,43 +1,16 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/dandeliondeathray/nona/game"
+	"github.com/dandeliondeathray/nona/persistence"
 
 	"github.com/dandeliondeathray/nona/slack"
 )
-
-type inMemoryPersistence struct {
-	states map[game.Player]game.PlayerState
-	seed   int64
-}
-
-func (p *inMemoryPersistence) ResolvePlayerState(player game.Player, resolution game.PlayerStateResolution) {
-	state, ok := p.states[player]
-	if !ok {
-		state = game.NewPlayerState()
-		p.states[player] = state
-	}
-
-	go resolution.PlayerStateResolved(state)
-}
-
-func (p *inMemoryPersistence) PlayerSolvedPuzzle(player game.Player, newPuzzleIndex int) {
-	state, ok := p.states[player]
-	if !ok {
-		panic(fmt.Sprintf("Player %s solved the puzzle, new index is %d, but no state was found", player, newPuzzleIndex))
-	}
-	state.PuzzleIndex = newPuzzleIndex
-	p.states[player] = state
-}
-
-func (p *inMemoryPersistence) StoreNewRound(seed int64) {
-	p.seed = seed
-}
 
 func main() {
 	token := os.Getenv("SLACK_TOKEN")
@@ -50,6 +23,12 @@ func main() {
 		log.Fatalf("DICTIONARY must be set to the path of the dictionary file.")
 	}
 
+	persistenceEndpointsString := os.Getenv("PERSISTENCE_ENDPOINTS")
+	if persistenceEndpointsString == "" {
+		log.Fatalf("PERSISTENCE_ENDPOINTS must be set to a comma separated list of etcd instances")
+	}
+	persistenceEndpoints := strings.Split(persistenceEndpointsString, ",")
+
 	chOutgoing := make(chan slack.OutgoingMessage)
 	response := slack.SlackResponse{ChOutgoing: chOutgoing}
 
@@ -57,8 +36,8 @@ func main() {
 	if err != nil {
 		log.Fatalf("Error when reading dictionary: %v", err)
 	}
-	persistence := inMemoryPersistence{make(map[game.Player]game.PlayerState), 0}
-	nona := game.NewGame(&response, &persistence, dictionary)
+	etcdPersistence := persistence.NewPersistence("konsulatet", persistenceEndpoints)
+	nona := game.NewGame(&response, etcdPersistence, dictionary)
 	nona.NewRound(time.Now().Unix())
 
 	slack.RunSlack(token, nona, chOutgoing)
