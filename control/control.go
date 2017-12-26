@@ -39,3 +39,11 @@ func (c *controlHandler) handleNewRound(w http.ResponseWriter, request *http.Req
 	c.target.NewRound(seed)
 	w.WriteHeader(http.StatusOK)
 }
+
+// StartControl listens to HTTP requests to the control layer.
+func StartControl(target Target) {
+	r := NewRouter(target)
+	http.Handle("/", r)
+
+	http.ListenAndServe(":8080", nil)
+}

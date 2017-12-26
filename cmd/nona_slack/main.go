@@ -5,6 +5,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/dandeliondeathray/nona/control"
 	"github.com/dandeliondeathray/nona/game"
 	"github.com/dandeliondeathray/nona/persistence"
 
@@ -48,6 +49,8 @@ func main() {
 	response := slack.SlackResponse{ChOutgoing: chOutgoing}
 	etcdPersistence := persistence.NewPersistence(team, persistenceEndpoints)
 	nona := game.NewGame(&response, etcdPersistence, dictionary)
+
+	go control.StartControl(nona)
 
 	//
 	// Recover state from database.
