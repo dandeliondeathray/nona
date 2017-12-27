@@ -16,8 +16,9 @@ func TestGamePersistence_NewRound_SeedIsStoredInPersistence(t *testing.T) {
 
 	response := mock.NewMockResponse(mockCtrl)
 	persistence := mock.NewMockPersistence(mockCtrl)
+	scoring := mock.NewMockScoring(mockCtrl)
 	persistence.EXPECT().StoreNewRound(seed)
 
-	nona := game.NewGame(response, persistence, acceptanceDictionary)
+	nona := game.NewGame(response, persistence, acceptanceDictionary, scoring)
 	nona.NewRound(seed)
 }

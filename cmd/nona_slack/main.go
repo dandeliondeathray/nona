@@ -12,6 +12,12 @@ import (
 	"github.com/dandeliondeathray/nona/slack"
 )
 
+type fakeScoring struct{}
+
+func (f *fakeScoring) ProduceScores(seed int64) {
+
+}
+
 func main() {
 	//
 	// Read configuration from environment.
@@ -48,7 +54,8 @@ func main() {
 	chOutgoing := make(chan slack.OutgoingMessage)
 	response := slack.SlackResponse{ChOutgoing: chOutgoing}
 	etcdPersistence := persistence.NewPersistence(team, persistenceEndpoints)
-	nona := game.NewGame(&response, etcdPersistence, dictionary)
+	scoring := fakeScoring{}
+	nona := game.NewGame(&response, etcdPersistence, dictionary, &scoring)
 
 	go control.StartControl(nona)
 

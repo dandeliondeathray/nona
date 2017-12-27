@@ -15,10 +15,16 @@ type Game struct {
 	dictionary  []string
 	persistence Persistence
 	solutions   *Solutions
+	currentSeed *int64
+	scoring     Scoring
 }
 
 // NewRound starts a new round.
 func (g *Game) NewRound(seed int64) {
+	if g.currentSeed != nil {
+		g.scoring.ProduceScores(*g.currentSeed)
+	}
+	g.currentSeed = &seed
 	g.puzzleChain = chain.NewPuzzles(g.dictionary, seed)
 	g.persistence.StoreNewRound(seed)
 }
@@ -55,6 +61,7 @@ func (g *Game) TryWord(player Player, word Word) {
 
 // OnRoundRecovered is called when the persistence has recovered the current round state.
 func (g *Game) OnRoundRecovered(seed int64) {
+	g.currentSeed = &seed
 	g.puzzleChain = chain.NewPuzzles(g.dictionary, seed)
 }
 
@@ -64,13 +71,15 @@ func (g *Game) isRoundActive() bool {
 }
 
 // NewGame creates a new game type, given a dictionary.
-func NewGame(response Response, persistence Persistence, dictionary []string) *Game {
+func NewGame(response Response, persistence Persistence, dictionary []string, scoring Scoring) *Game {
 	return &Game{
 		response:    response,
 		puzzleChain: nil,
 		dictionary:  dictionary,
 		persistence: persistence,
-		solutions:   NewSolutions(dictionary)}
+		solutions:   NewSolutions(dictionary),
+		currentSeed: nil,
+		scoring:     scoring}
 }
 
 // PlayerState has all state for a given player.
