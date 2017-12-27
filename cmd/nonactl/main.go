@@ -1,27 +1,36 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"log"
+	"net/http"
 	"os"
 	"strconv"
 )
 
+var url string
+
 func main() {
-	if len(os.Args) < 2 {
+
+	flag.StringVar(&url, "url", "http://localhost:8080", "URL for the nona control layer.")
+	flag.Parse()
+
+	args := flag.Args()
+	if len(args) < 2 {
 		os.Exit(1)
 	}
 
-	switch os.Args[1] {
+	switch args[0] {
 	case "newround":
-		seed, err := parseNewRound(os.Args[2:])
+		seed, err := parseNewRound(args[1:])
 		if err != nil {
 			log.Fatalf("Bad flags: %s", err)
 		}
 		newRound(seed)
 		break
 	default:
-		log.Fatalf("Unknown command '%s'", os.Args[1])
+		log.Fatalf("Unknown command '%s'", args[0])
 	}
 }
 
@@ -43,4 +52,13 @@ func parseNewRound(args []string) (int64, error) {
 
 func newRound(seed int64) {
 	log.Printf("Seed: %d", seed)
+	url := fmt.Sprintf("%s/newround/%d", url, seed)
+	resp, err := http.Post(url, "application/text", nil)
+	if err != nil {
+		log.Println("New round request failed, because:", err)
+		return
+	}
+	if resp.StatusCode != 200 {
+		log.Printf("Unexpected status code %d", resp.StatusCode)
+	}
 }
