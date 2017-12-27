@@ -4,9 +4,11 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"math/rand"
 	"net/http"
 	"os"
 	"strconv"
+	"time"
 )
 
 var url string
@@ -17,7 +19,7 @@ func main() {
 	flag.Parse()
 
 	args := flag.Args()
-	if len(args) < 2 {
+	if len(args) < 1 {
 		os.Exit(1)
 	}
 
@@ -36,7 +38,9 @@ func main() {
 
 func parseNewRound(args []string) (int64, error) {
 	if len(args) == 0 {
-		return 0, fmt.Errorf("seed required")
+		rand.Seed(time.Now().Unix())
+		randomSeed := rand.Int63()
+		return randomSeed, nil
 	}
 	if len(args) > 1 {
 		return 0, fmt.Errorf("too many arguments")
