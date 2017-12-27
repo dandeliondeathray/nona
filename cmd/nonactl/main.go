@@ -52,7 +52,7 @@ func parseNewRound(args []string) (int64, error) {
 
 func newRound(seed int64) {
 	log.Printf("Seed: %d", seed)
-	url := fmt.Sprintf("%s/newround/%d", url, seed)
+	url := fmt.Sprintf("%s/round/%d", url, seed)
 	resp, err := http.Post(url, "application/text", nil)
 	if err != nil {
 		log.Println("New round request failed, because:", err)
