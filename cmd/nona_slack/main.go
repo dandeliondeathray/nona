@@ -43,6 +43,11 @@ func main() {
 		log.Fatal("TEAM must be set to the team name.")
 	}
 
+	notificationChannel := os.Getenv("NOTIFICATION_CHANNEL")
+	if notificationChannel == "" {
+		log.Fatal("NOTIFICATION_CHANNEL must be set to a channel name")
+	}
+
 	dictionary, err := game.LoadDictionaryFromFile(dictionaryPath)
 	if err != nil {
 		log.Fatalf("Error when reading dictionary: %v", err)
@@ -52,10 +57,11 @@ func main() {
 	// Arrange game components.
 	//
 	chOutgoing := make(chan slack.OutgoingMessage)
-	response := slack.SlackResponse{ChOutgoing: chOutgoing}
+	chNotifications := make(chan slack.NotificationMessage)
+	response := slack.NewSlackResponse(chOutgoing, chNotifications)
 	etcdPersistence := persistence.NewPersistence(team, persistenceEndpoints)
 	scoring := fakeScoring{}
-	nona := game.NewGame(&response, etcdPersistence, dictionary, &scoring)
+	nona := game.NewGame(response, etcdPersistence, dictionary, &scoring)
 
 	go control.StartControl(nona)
 
@@ -67,5 +73,5 @@ func main() {
 	<-recoveryDone
 	// TODO: Don't mark Nona as Kubernetes ready before this is completed.
 
-	slack.RunSlack(token, nona, chOutgoing)
+	slack.RunSlack(token, nona, chOutgoing, chNotifications, notificationChannel)
 }

@@ -2,7 +2,7 @@ package slack
 
 import (
 	"fmt"
-	"log"
+	"strings"
 
 	"github.com/dandeliondeathray/nona/game"
 )
@@ -12,17 +12,26 @@ type OutgoingMessage struct {
 	Text   string
 }
 
+type NotificationMessage struct {
+	Text string
+}
+
 type SlackResponse struct {
-	ChOutgoing chan OutgoingMessage
+	chOutgoing      chan OutgoingMessage
+	chNotifications chan NotificationMessage
+}
+
+func NewSlackResponse(chOutgoing chan OutgoingMessage, chNotifications chan NotificationMessage) *SlackResponse {
+	return &SlackResponse{chOutgoing, chNotifications}
 }
 
 func (r *SlackResponse) OnPuzzleNotification(player game.Player, puzzle game.Puzzle) {
-	r.ChOutgoing <- OutgoingMessage{player, string(puzzle)}
+	r.chOutgoing <- OutgoingMessage{player, string(puzzle)}
 }
 
 func (r *SlackResponse) OnCorrectWord(player game.Player, word game.Word) {
 	m := fmt.Sprintf("Ordet %s är korrekt!", word)
-	r.ChOutgoing <- OutgoingMessage{player, m}
+	r.chOutgoing <- OutgoingMessage{player, m}
 }
 
 func (r *SlackResponse) OnIncorrectWord(player game.Player, word game.Word, tooMany, tooFew string) {
@@ -38,13 +47,20 @@ func (r *SlackResponse) OnIncorrectWord(player game.Player, word game.Word, tooM
 			message += fmt.Sprintf(" För få %s.", tooFew)
 		}
 	}
-	r.ChOutgoing <- OutgoingMessage{player, message}
+	r.chOutgoing <- OutgoingMessage{player, message}
 }
 
 func (r *SlackResponse) OnNoRound(player game.Player) {
-	r.ChOutgoing <- OutgoingMessage{player, "No round has been started."}
+	r.chOutgoing <- OutgoingMessage{player, "No round has been started."}
 }
 
 func (r *SlackResponse) OnPerPlayerScores(scoringName string, scores []game.PerPlayerScore) {
-	log.Printf("%s: %v", scoringName, scores)
+	message := []string{fmt.Sprintf("**%s**", scoringName)}
+
+	for i, score := range scores {
+		scoreText := fmt.Sprintf("%d: @%s: %f", i+1, score.Player, score.Score)
+		message = append(message, scoreText)
+	}
+
+	r.chNotifications <- NotificationMessage{strings.Join(message, "\n")}
 }

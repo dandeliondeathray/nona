@@ -33,7 +33,7 @@ func (s *slackChannels) getReplyChannel(player game.Player) string {
 var channels = slackChannels{channels: make(map[game.Player]string), mutex: sync.Mutex{}}
 
 // RunSlack connects to slack and listens to messages.
-func RunSlack(token string, nona *game.Game, chOutgoing <-chan OutgoingMessage) {
+func RunSlack(token string, nona *game.Game, chOutgoing <-chan OutgoingMessage, chNotifications chan NotificationMessage, notificationChannel string) {
 	api := slack.New(token)
 	logger := log.New(os.Stdout, "slack-bot: ", log.Lshortfile|log.LstdFlags)
 	slack.SetLogger(logger)
@@ -42,6 +42,7 @@ func RunSlack(token string, nona *game.Game, chOutgoing <-chan OutgoingMessage) 
 	rtm := api.NewRTM()
 	go rtm.ManageConnection()
 	go writeOutgoingMessages(chOutgoing, rtm)
+	go writeNotificationMessages(chNotifications, rtm, notificationChannel)
 
 	var handler *NonaSlackHandler
 
@@ -94,5 +95,11 @@ func writeOutgoingMessages(chOutgoing <-chan OutgoingMessage, rtm *slack.RTM) {
 	for m := range chOutgoing {
 		replyChannel := channels.getReplyChannel(m.Player)
 		rtm.SendMessage(rtm.NewOutgoingMessage(m.Text, replyChannel))
+	}
+}
+
+func writeNotificationMessages(chNotifications <-chan NotificationMessage, rtm *slack.RTM, notificationChannel string) {
+	for m := range chNotifications {
+		rtm.SendMessage(rtm.NewOutgoingMessage(m.Text, notificationChannel))
 	}
 }
