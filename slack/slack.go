@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 	"sync"
 
 	"github.com/dandeliondeathray/nona/game"
@@ -12,6 +13,7 @@ import (
 
 type slackChannels struct {
 	channels map[game.Player]string
+	rtmInfo  *slack.Info
 	mutex    sync.Mutex
 }
 
@@ -23,11 +25,29 @@ func (s *slackChannels) setReplyChannel(player game.Player, channelID string) {
 }
 
 func (s *slackChannels) getReplyChannel(player game.Player) string {
+	defer s.mutex.Unlock()
+	s.mutex.Lock()
+
 	channelID, ok := s.channels[player]
 	if !ok {
 		panic(fmt.Sprintf("No reply channel found for player %s", player))
 	}
 	return channelID
+}
+
+func (s *slackChannels) setRTMInfo(rtmInfo *slack.Info) {
+	defer s.mutex.Unlock()
+	s.mutex.Lock()
+
+	s.rtmInfo = rtmInfo
+}
+
+func (s *slackChannels) getUserName(player game.Player) string {
+	defer s.mutex.Unlock()
+	s.mutex.Lock()
+
+	name := s.rtmInfo.GetUserByID(string(player)).Name
+	return name
 }
 
 var channels = slackChannels{channels: make(map[game.Player]string), mutex: sync.Mutex{}}
@@ -45,12 +65,14 @@ func RunSlack(token string, nona *game.Game, chOutgoing <-chan OutgoingMessage, 
 	go writeNotificationMessages(chNotifications, rtm, notificationChannel)
 
 	var handler *NonaSlackHandler
+	var rtmInfo *slack.Info
 
 	for msg := range rtm.IncomingEvents {
 		log.Println("Event Received")
 		switch ev := msg.Data.(type) {
 		case *slack.HelloEvent:
-			rtmInfo := rtm.GetInfo()
+			rtmInfo = rtm.GetInfo()
+			channels.setRTMInfo(rtmInfo)
 			self := game.Player(rtmInfo.User.ID)
 			handler = NewNonaSlackHandler(nona, self)
 
@@ -68,6 +90,10 @@ func RunSlack(token string, nona *game.Game, chOutgoing <-chan OutgoingMessage, 
 			log.Printf("Message: %v\n", ev)
 			msgEvent := msg.Data.(*slack.MessageEvent)
 			player := game.Player(msgEvent.User)
+			if strings.HasPrefix(msgEvent.Channel, "C") {
+				log.Printf("Message '%s' was to a public channel. Ignoring.", msgEvent.Text)
+				continue
+			}
 			channels.setReplyChannel(player, msgEvent.Channel)
 			handler.OnMessage(player, msgEvent.Text)
 

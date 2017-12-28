@@ -58,8 +58,12 @@ func (r *SlackResponse) OnPerPlayerScores(scoringName string, scores []game.PerP
 	message := []string{fmt.Sprintf("*%s*", scoringName)}
 
 	for i, score := range scores {
-		scoreText := fmt.Sprintf("%d: @%s: %.1f", i+1, score.Player, score.Score)
+		name := channels.getUserName(score.Player)
+		scoreText := fmt.Sprintf("%d: %s: %.1f", i+1, name, score.Score)
 		message = append(message, scoreText)
+	}
+	if len(scores) == 0 {
+		message = append(message, "Inga spelare löste några pussel.")
 	}
 
 	r.chNotifications <- NotificationMessage{strings.Join(message, "\n")}
