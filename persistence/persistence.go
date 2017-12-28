@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/dandeliondeathray/nona/game"
@@ -47,7 +48,15 @@ func (p *Persistence) ResolvePlayerState(player game.Player, resolution game.Pla
 }
 
 func (p *Persistence) ResolveAllPlayerStates(resolution game.AllPlayerStatesResolution) {
-
+	f := func() {
+		states, err := p.getAllPlayerStates()
+		if err == nil {
+			resolution.AllPlayerStatesResolved(states)
+		} else {
+			log.Println("Error when getting all player states:", err)
+		}
+	}
+	go f()
 }
 
 func (p *Persistence) PlayerSolvedPuzzle(player game.Player, newPuzzleIndex int) {
@@ -136,7 +145,7 @@ func (p *Persistence) getPlayerState(player game.Player) (int, error) {
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(1)*time.Second)
 	kvc := clientv3.NewKV(cli)
-	resp, err := kvc.Get(ctx, fmt.Sprintf("%s/%s/%d/index", p.team, player, p.seed))
+	resp, err := kvc.Get(ctx, fmt.Sprintf("%s/%d/index/%s", p.team, p.seed, player))
 	cancel()
 	if err != nil {
 		return 0, err
@@ -162,7 +171,7 @@ func (p *Persistence) setPlayerState(player game.Player, index int) error {
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(1)*time.Second)
 	kvc := clientv3.NewKV(cli)
-	resp, err := kvc.Put(ctx, fmt.Sprintf("%s/%s/%d/index", p.team, player, p.seed), fmt.Sprintf("%d", index))
+	resp, err := kvc.Put(ctx, fmt.Sprintf("%s/%d/index/%s", p.team, p.seed, player), fmt.Sprintf("%d", index))
 	cancel()
 	if err != nil {
 		return err
@@ -172,6 +181,55 @@ func (p *Persistence) setPlayerState(player game.Player, index int) error {
 	return nil
 }
 
+func (p *Persistence) getAllPlayerStates() (map[game.Player]game.PlayerState, error) {
+	cli, err := p.getClient()
+	if err != nil {
+		return nil, err
+	}
+	defer cli.Close()
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(1)*time.Second)
+	kvc := clientv3.NewKV(cli)
+	resp, err := kvc.Get(ctx, fmt.Sprintf("%s/%d/index", p.team, p.seed), clientv3.WithPrefix())
+	cancel()
+	if err != nil {
+		return nil, err
+	}
+	// use the response
+	log.Printf("All player states response is: %v", resp)
+	if len(resp.Kvs) == 0 {
+		return map[game.Player]game.PlayerState{}, nil
+	}
+
+	result := make(map[game.Player]game.PlayerState)
+	for _, kv := range resp.Kvs {
+		player, err := playerFromIndexKey(string(kv.Key))
+		if err == nil {
+			index, err := strconv.Atoi(string(kv.Value))
+			if err == nil {
+				result[player] = game.PlayerState{PuzzleIndex: index}
+			} else {
+				log.Printf("getAllPlayerStates: Player %s: Could not parse puzzle index: %s", player, string(kv.Value))
+			}
+
+		} else {
+			log.Printf("getAllPlayerStates: %v", err)
+		}
+	}
+	return result, nil
+}
+
 func NewPersistence(team string, endpoints []string) *Persistence {
 	return &Persistence{team, 0, endpoints}
+}
+
+func playerFromIndexKey(key string) (game.Player, error) {
+	tokens := strings.Split(key, "/")
+	if len(tokens) != 4 {
+		return game.Player(""), fmt.Errorf("Expected key on form team/seed/index/player, but got wrong number of tokens %v", tokens)
+	}
+	if tokens[2] != "index" {
+		return game.Player(""), fmt.Errorf("Expected key on form team/seed/index/player, but didn't get index in right place with tokens %v", tokens)
+	}
+	return game.Player(tokens[3]), nil
 }
