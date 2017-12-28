@@ -15,11 +15,14 @@ spec:
       labels:
         app: etcd
     spec:
+      nodeSelector:
+        kubernetes.io/hostname: angela
       containers:
       - command:
         - /usr/local/bin/etcd
         - --name
         - etcd0
+        - --data-dir=/data
         - --initial-advertise-peer-urls
         - http://etcd0:2380
         - --listen-peer-urls
@@ -41,7 +44,13 @@ spec:
         - containerPort: 2380
           name: server
           protocol: TCP
-      restartPolicy: Always
+        volumeMounts:
+        - name: data
+          mountPath: /data
+      volumes:
+      - name: data
+        hostPath:
+          path: /etcd
 ---
 apiVersion: v1
 kind: Service

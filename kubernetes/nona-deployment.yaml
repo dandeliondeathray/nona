@@ -23,7 +23,11 @@ spec:
           - name: TEAM
             value: konsulatet
           - name: PERSISTENCE_ENDPOINTS
-            value: etcd-1:2879,etcd-1:4001
+            value: etcd0:2379
+          - name: TEAM
+            value: konsulatet
+          - name: NOTIFICATION_CHANNEL
+            value: \#betacat
           - name: SLACK_TOKEN
             valueFrom:
               secretKeyRef:
@@ -36,3 +40,17 @@ spec:
       - name: dictionary-vol
         configMap:
           name: dictionary
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: nona
+  name: nona
+spec:
+  ports:
+  - port: 8080
+    protocol: TCP
+    targetPort: 8080
+  selector:
+    app: nona

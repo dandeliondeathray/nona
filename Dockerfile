@@ -1,4 +1,4 @@
-FROM golang:1.8.3 as builder
+FROM golang:1.9.2 as builder
 
 RUN mkdir -p /go/src/github.com/dandeliondeathray/nona
 COPY . /go/src/github.com/dandeliondeathray/nona
