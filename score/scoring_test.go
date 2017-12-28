@@ -51,6 +51,28 @@ func TestScoring_TwoPlayers_PlayerWithTheHighestScoreIsFirst(t *testing.T) {
 		game.Player("U2"): game.PlayerState{PuzzleIndex: 42}})
 }
 
+func TestScoring_ThreePlayers_PlayerWithTheHighestScoreIsFirst(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	seed := int64(42)
+	persistence := mock.NewFakePersistence()
+	response := mock.NewMockResponse(mockCtrl)
+	ranking := newRankingMatcher("U2", "U1", "U3")
+
+	// Assert
+	response.EXPECT().OnPerPlayerScores(gomock.Any(), ranking)
+
+	// Act
+	scoring := score.NewScoring(response, persistence)
+
+	scoring.ProduceScores(seed)
+	persistence.ResolveAllPlayers(map[game.Player]game.PlayerState{
+		game.Player("U1"): game.PlayerState{PuzzleIndex: 17},
+		game.Player("U2"): game.PlayerState{PuzzleIndex: 42},
+		game.Player("U3"): game.PlayerState{PuzzleIndex: 1}})
+}
+
 // rankingMatcher matches the player rankings against expectations, but does not
 // match the scores.
 type rankingMatcher struct {
