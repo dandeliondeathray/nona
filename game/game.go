@@ -103,7 +103,7 @@ type puzzleNotification struct {
 // the player.
 func (p *puzzleNotification) PlayerStateResolved(playerState PlayerState) {
 	puzzle := Puzzle(p.puzzleChain.Get(playerState.PuzzleIndex))
-	p.response.OnPuzzleNotification(p.player, puzzle)
+	p.response.OnPuzzleNotification(p.player, puzzle, playerState.PuzzleIndex)
 }
 
 // checkWord takes a resolved player state and checks the provided word against the current puzzle

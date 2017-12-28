@@ -25,8 +25,8 @@ func NewSlackResponse(chOutgoing chan OutgoingMessage, chNotifications chan Noti
 	return &SlackResponse{chOutgoing, chNotifications}
 }
 
-func (r *SlackResponse) OnPuzzleNotification(player game.Player, puzzle game.Puzzle) {
-	r.chOutgoing <- OutgoingMessage{player, string(puzzle)}
+func (r *SlackResponse) OnPuzzleNotification(player game.Player, puzzle game.Puzzle, index int) {
+	r.chOutgoing <- OutgoingMessage{player, fmt.Sprintf("Pussel %d: %s", index, puzzle)}
 }
 
 func (r *SlackResponse) OnCorrectWord(player game.Player, word game.Word) {
@@ -57,9 +57,9 @@ func (r *SlackResponse) OnNoRound(player game.Player) {
 func (r *SlackResponse) OnPerPlayerScores(scoringName string, scores []game.PerPlayerScore) {
 	message := []string{fmt.Sprintf("*%s*", scoringName)}
 
-	for i, score := range scores {
+	for _, score := range scores {
 		name := channels.getUserName(score.Player)
-		scoreText := fmt.Sprintf("%d: %s: %.1f", i+1, name, score.Score)
+		scoreText := fmt.Sprintf("%s: %.1f", name, score.Score)
 		message = append(message, scoreText)
 	}
 	if len(scores) == 0 {

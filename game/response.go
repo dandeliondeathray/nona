@@ -7,7 +7,7 @@ type Puzzle string
 
 // Response is the interface from Nona to the player.
 type Response interface {
-	OnPuzzleNotification(player Player, puzzle Puzzle)
+	OnPuzzleNotification(player Player, puzzle Puzzle, index int)
 	OnCorrectWord(player Player, word Word)
 	OnIncorrectWord(player Player, word Word, tooMany, tooFew string)
 	OnNoRound(player Player)

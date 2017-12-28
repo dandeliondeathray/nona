@@ -22,10 +22,41 @@ func TestGiveMeCommand_ForANewRound_PuzzleIsReturned(t *testing.T) {
 	scoring := mock.NewMockScoring(mockCtrl)
 
 	// Assert
-	response.EXPECT().OnPuzzleNotification(player, gomock.Any())
+	response.EXPECT().OnPuzzleNotification(player, gomock.Any(), 0)
 
 	nona := game.NewGame(response, persistence, acceptanceDictionary, scoring)
 	nona.NewRound(0)
+	nona.GiveMe(player)
+	persistence.FakePlayerStateResolved(player)
+}
+
+func TestPuzzleIndex_SolveTwoPuzzles_IndexesAre0And1(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	player := game.Player("U1")
+	response := mock.NewMockResponse(mockCtrl)
+	persistence := mock.NewFakePersistence()
+	scoring := mock.NewMockScoring(mockCtrl)
+	puzzle := puzzleSaver{}
+
+	// Assert
+	response.EXPECT().OnPuzzleNotification(player, &puzzle, 0)
+	response.EXPECT().OnPuzzleNotification(player, gomock.Any(), 1)
+	response.EXPECT().OnCorrectWord(gomock.Any(), gomock.Any()).AnyTimes()
+
+	nona := game.NewGame(response, persistence, acceptanceDictionary, scoring)
+	nona.NewRound(0)
+	// Get first puzzle with index 0.
+	nona.GiveMe(player)
+	persistence.FakePlayerStateResolved(player)
+
+	// Solve first puzzle.
+	correctWord := game.Word(oracle.FindASolutionFor(*puzzle.puzzle))
+	nona.TryWord(player, correctWord)
+	persistence.FakePlayerStateResolved(player)
+
+	// Get second puzzle with index 1.
 	nona.GiveMe(player)
 	persistence.FakePlayerStateResolved(player)
 }
@@ -41,8 +72,8 @@ func TestPuzzles_SolveFirstPuzzle_NextPuzzleIsDifferent(t *testing.T) {
 	persistence := mock.NewFakePersistence()
 	scoring := mock.NewMockScoring(mockCtrl)
 
-	response.EXPECT().OnPuzzleNotification(player, &differentPuzzles)
-	response.EXPECT().OnPuzzleNotification(player, &differentPuzzles)
+	response.EXPECT().OnPuzzleNotification(player, &differentPuzzles, gomock.Any())
+	response.EXPECT().OnPuzzleNotification(player, &differentPuzzles, gomock.Any())
 	response.EXPECT().OnCorrectWord(gomock.Any(), gomock.Any()).AnyTimes()
 
 	nona := game.NewGame(response, persistence, acceptanceDictionary, scoring)
@@ -67,8 +98,8 @@ func TestPuzzles_TryIncorrectSolution_CurrentPuzzleIsUnchanged(t *testing.T) {
 	persistence := mock.NewFakePersistence()
 	scoring := mock.NewMockScoring(mockCtrl)
 
-	response.EXPECT().OnPuzzleNotification(player, &puzzleIsUnchanged)
-	response.EXPECT().OnPuzzleNotification(player, &puzzleIsUnchanged)
+	response.EXPECT().OnPuzzleNotification(player, &puzzleIsUnchanged, gomock.Any())
+	response.EXPECT().OnPuzzleNotification(player, &puzzleIsUnchanged, gomock.Any())
 	response.EXPECT().OnCorrectWord(gomock.Any(), gomock.Any()).AnyTimes()
 	response.EXPECT().OnIncorrectWord(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
 
@@ -93,7 +124,7 @@ func TestPuzzles_CorrectSolution_UserIsNotified(t *testing.T) {
 	persistence := mock.NewFakePersistence()
 	scoring := mock.NewMockScoring(mockCtrl)
 
-	response.EXPECT().OnPuzzleNotification(player, &puzzleMatch)
+	response.EXPECT().OnPuzzleNotification(player, &puzzleMatch, gomock.Any())
 
 	nona := game.NewGame(response, persistence, acceptanceDictionary, scoring)
 	nona.NewRound(0)
@@ -117,7 +148,7 @@ func TestPuzzles_CorrectSolutionButLowercase_UserIsNotified(t *testing.T) {
 	persistence := mock.NewFakePersistence()
 	scoring := mock.NewMockScoring(mockCtrl)
 
-	response.EXPECT().OnPuzzleNotification(player, &puzzleMatch)
+	response.EXPECT().OnPuzzleNotification(player, &puzzleMatch, gomock.Any())
 
 	nona := game.NewGame(response, persistence, acceptanceDictionary, scoring)
 	nona.NewRound(0)
@@ -143,7 +174,7 @@ func TestPuzzles_IncorrectSolution_UserIsToldItIsIncorrect(t *testing.T) {
 	persistence := mock.NewFakePersistence()
 	scoring := mock.NewMockScoring(mockCtrl)
 
-	response.EXPECT().OnPuzzleNotification(player, gomock.Any())
+	response.EXPECT().OnPuzzleNotification(player, gomock.Any(), gomock.Any())
 	response.EXPECT().OnCorrectWord(player, gomock.Any()).Times(0)
 	response.EXPECT().OnIncorrectWord(player, incorrectWord, gomock.Any(), gomock.Any())
 
@@ -170,7 +201,7 @@ func TestPuzzles_TryPuzzleAsSolutionInLowercase_NoMismatchingLetters(t *testing.
 	persistence := mock.NewFakePersistence()
 	scoring := mock.NewMockScoring(mockCtrl)
 
-	response.EXPECT().OnPuzzleNotification(player, &puzzleMatch)
+	response.EXPECT().OnPuzzleNotification(player, &puzzleMatch, gomock.Any())
 	response.EXPECT().OnCorrectWord(player, gomock.Any()).Times(0)
 
 	// We want to ensure that the letter matching is done in a case insensitive way.
@@ -204,8 +235,8 @@ func TestTwoPlayers_FirstPuzzle_SameForBothPlayers(t *testing.T) {
 	persistence := mock.NewFakePersistence()
 	scoring := mock.NewMockScoring(mockCtrl)
 
-	response.EXPECT().OnPuzzleNotification(player1, &firstPuzzleIsTheSame)
-	response.EXPECT().OnPuzzleNotification(player2, &firstPuzzleIsTheSame)
+	response.EXPECT().OnPuzzleNotification(player1, &firstPuzzleIsTheSame, 0)
+	response.EXPECT().OnPuzzleNotification(player2, &firstPuzzleIsTheSame, 0)
 
 	nona := game.NewGame(response, persistence, acceptanceDictionary, scoring)
 	nona.NewRound(0)
@@ -229,9 +260,9 @@ func TestTwoPlayers_FirstPlayerSolvesIt_SecondPlayersPuzzleIsUnchanged(t *testin
 	persistence := mock.NewFakePersistence()
 	scoring := mock.NewMockScoring(mockCtrl)
 
-	response.EXPECT().OnPuzzleNotification(player1, &player1Puzzle)
-	response.EXPECT().OnPuzzleNotification(player2, &player2PuzzleUnchanged)
-	response.EXPECT().OnPuzzleNotification(player2, &player2PuzzleUnchanged)
+	response.EXPECT().OnPuzzleNotification(player1, &player1Puzzle, 0)
+	response.EXPECT().OnPuzzleNotification(player2, &player2PuzzleUnchanged, 0)
+	response.EXPECT().OnPuzzleNotification(player2, &player2PuzzleUnchanged, 0)
 	response.EXPECT().OnCorrectWord(gomock.Any(), gomock.Any()).AnyTimes()
 
 	// Arrange
@@ -264,7 +295,7 @@ func TestPuzzles_WordAndPuzzleMismatch_UserIsToldWhatLettersMismatched(t *testin
 	persistence := mock.NewFakePersistence()
 	scoring := mock.NewMockScoring(mockCtrl)
 
-	response.EXPECT().OnPuzzleNotification(player, &savedPuzzle)
+	response.EXPECT().OnPuzzleNotification(player, &savedPuzzle, gomock.Any())
 	response.EXPECT().OnCorrectWord(player, gomock.Any()).Times(0)
 
 	// Arrange
@@ -330,7 +361,7 @@ func TestRoundIsRecovered_GiveMeCommand_PuzzleReturned(t *testing.T) {
 	scoring := mock.NewMockScoring(mockCtrl)
 
 	// Assert
-	response.EXPECT().OnPuzzleNotification(gomock.Any(), gomock.Any())
+	response.EXPECT().OnPuzzleNotification(gomock.Any(), gomock.Any(), gomock.Any())
 
 	nona := game.NewGame(response, persistence, acceptanceDictionary, scoring)
 	nona.OnRoundRecovered(seed)
