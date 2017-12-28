@@ -5,18 +5,14 @@ import (
 	"os"
 	"strings"
 
+	"github.com/dandeliondeathray/nona/score"
+
 	"github.com/dandeliondeathray/nona/control"
 	"github.com/dandeliondeathray/nona/game"
 	"github.com/dandeliondeathray/nona/persistence"
 
 	"github.com/dandeliondeathray/nona/slack"
 )
-
-type fakeScoring struct{}
-
-func (f *fakeScoring) ProduceScores(seed int64) {
-
-}
 
 func main() {
 	//
@@ -60,8 +56,8 @@ func main() {
 	chNotifications := make(chan slack.NotificationMessage)
 	response := slack.NewSlackResponse(chOutgoing, chNotifications)
 	etcdPersistence := persistence.NewPersistence(team, persistenceEndpoints)
-	scoring := fakeScoring{}
-	nona := game.NewGame(response, etcdPersistence, dictionary, &scoring)
+	scoring := score.NewScoring(response, etcdPersistence)
+	nona := game.NewGame(response, etcdPersistence, dictionary, scoring)
 
 	go control.StartControl(nona)
 
