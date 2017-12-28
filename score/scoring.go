@@ -1,6 +1,8 @@
 package score
 
 import (
+	"sort"
+
 	"github.com/dandeliondeathray/nona/game"
 )
 
@@ -25,6 +27,17 @@ type simpleScore struct {
 }
 
 func (s *simpleScore) AllPlayerStatesResolved(states map[game.Player]game.PlayerState) {
-	s.response.OnPerPlayerScores("Pussel-ranking", []game.PerPlayerScore{
-		game.PerPlayerScore{Player: game.Player("U1"), Score: 0.0}})
+	scores := make([]game.PerPlayerScore, len(states))
+
+	i := 0
+	for player, state := range states {
+		scores[i] = game.PerPlayerScore{
+			Player: player,
+			Score:  float64(state.PuzzleIndex)}
+		i++
+	}
+
+	sort.Slice(scores, func(i, j int) bool { return scores[i].Score >= scores[j].Score })
+
+	s.response.OnPerPlayerScores("Pussel-ranking", []game.PerPlayerScore(scores))
 }
