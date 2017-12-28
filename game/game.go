@@ -1,6 +1,7 @@
 package game
 
 import "github.com/dandeliondeathray/nona/game/chain"
+import "sync"
 
 // Player uniquely identifies a player or user.
 type Player string
@@ -17,10 +18,14 @@ type Game struct {
 	solutions   *Solutions
 	currentSeed *int64
 	scoring     Scoring
+	mutex       sync.Mutex
 }
 
 // NewRound starts a new round.
 func (g *Game) NewRound(seed int64) {
+	g.mutex.Lock()
+	defer g.mutex.Unlock()
+
 	if g.currentSeed != nil {
 		g.scoring.ProduceScores(*g.currentSeed)
 	}
@@ -31,6 +36,9 @@ func (g *Game) NewRound(seed int64) {
 
 // GiveMe requests a puzzle notification for a player.
 func (g *Game) GiveMe(player Player) {
+	g.mutex.Lock()
+	defer g.mutex.Unlock()
+
 	if !g.isRoundActive() {
 		g.response.OnNoRound(player)
 		return
@@ -45,6 +53,9 @@ func (g *Game) GiveMe(player Player) {
 
 // TryWord checks if the supplied word is a correct solution for the current puzzle.
 func (g *Game) TryWord(player Player, word Word) {
+	g.mutex.Lock()
+	defer g.mutex.Unlock()
+
 	if !g.isRoundActive() {
 		g.response.OnNoRound(player)
 		return
@@ -61,6 +72,9 @@ func (g *Game) TryWord(player Player, word Word) {
 
 // OnRoundRecovered is called when the persistence has recovered the current round state.
 func (g *Game) OnRoundRecovered(seed int64) {
+	g.mutex.Lock()
+	defer g.mutex.Unlock()
+
 	g.currentSeed = &seed
 	g.puzzleChain = chain.NewPuzzles(g.dictionary, seed)
 }

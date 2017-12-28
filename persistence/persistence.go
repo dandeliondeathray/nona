@@ -77,6 +77,7 @@ func (p *Persistence) Recover(handler RecoveryHandler, done chan<- bool) {
 			log.Printf("Failed to recover round: %v", err)
 			done <- false
 		} else {
+			p.seed = seed
 			handler.OnRoundRecovered(seed)
 			done <- true
 		}

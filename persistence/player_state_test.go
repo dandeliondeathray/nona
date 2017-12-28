@@ -6,6 +6,8 @@ import (
 	"time"
 
 	"github.com/dandeliondeathray/nona/game"
+	"github.com/dandeliondeathray/nona/mock"
+	"github.com/golang/mock/gomock"
 
 	"github.com/dandeliondeathray/nona/persistence"
 )
@@ -94,6 +96,47 @@ func TestPersistPlayerState_NewRound_PlayerStateIsReset(t *testing.T) {
 	p.ResolvePlayerState(player, resolution)
 
 	err := resolution.AwaitPuzzleIndex(0)
+	if err != nil {
+		t.Fatalf("%v", err)
+	}
+}
+
+func TestRecoverRound_PlayerWasAtIndex17_PlayerIsRecoveredAtIndex17(t *testing.T) {
+	if testing.Short() {
+		return
+	}
+
+	seed := int64(42)
+
+	mockCtrl := gomock.NewController(t)
+	recoveryHandler := mock.NewMockRecoveryHandler(mockCtrl)
+	recoveryHandler.EXPECT().OnRoundRecovered(seed)
+
+	done := make(chan bool, 1)
+
+	// Arrange the persistence to have a current round with seed 42.
+	p := persistence.NewPersistence("test_recover_player_state", testingEndpoints)
+	p.StoreNewRound(42)
+	time.Sleep(time.Duration(200) * time.Millisecond)
+
+	// Store index 17 for player
+	player := game.Player("U1")
+	p.PlayerSolvedPuzzle(player, 17)
+	time.Sleep(time.Duration(200) * time.Millisecond)
+
+	p2 := persistence.NewPersistence("test_recover_player_state", testingEndpoints)
+	p2.Recover(recoveryHandler, done)
+	success := <-done
+
+	if !success {
+		t.Fatalf("Recovery failed")
+	}
+
+	// The player state should be resolved as index 17.
+	resolution := newAsyncPlayerStateResolution()
+	p2.ResolvePlayerState(player, resolution)
+
+	err := resolution.AwaitPuzzleIndex(17)
 	if err != nil {
 		t.Fatalf("%v", err)
 	}
