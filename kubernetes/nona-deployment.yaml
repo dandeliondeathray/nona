@@ -27,7 +27,7 @@ spec:
           - name: TEAM
             value: konsulatet
           - name: NOTIFICATION_CHANNEL
-            value: \#betacat
+            value: C68932C9X
           - name: SLACK_TOKEN
             valueFrom:
               secretKeyRef:

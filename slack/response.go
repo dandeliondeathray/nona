@@ -51,14 +51,14 @@ func (r *SlackResponse) OnIncorrectWord(player game.Player, word game.Word, tooM
 }
 
 func (r *SlackResponse) OnNoRound(player game.Player) {
-	r.chOutgoing <- OutgoingMessage{player, "No round has been started."}
+	r.chOutgoing <- OutgoingMessage{player, "Ingen runda har startats än."}
 }
 
 func (r *SlackResponse) OnPerPlayerScores(scoringName string, scores []game.PerPlayerScore) {
-	message := []string{fmt.Sprintf("**%s**", scoringName)}
+	message := []string{fmt.Sprintf("*%s*", scoringName)}
 
 	for i, score := range scores {
-		scoreText := fmt.Sprintf("%d: @%s: %f", i+1, score.Player, score.Score)
+		scoreText := fmt.Sprintf("%d: @%s: %.1f", i+1, score.Player, score.Score)
 		message = append(message, scoreText)
 	}
 
