@@ -18,7 +18,7 @@ func TestGiveMeCommand_ForANewRound_PuzzleIsReturned(t *testing.T) {
 
 	player := game.Player("U1")
 	response := mock.NewMockResponse(mockCtrl)
-	persistence := newFakePersistence()
+	persistence := mock.NewFakePersistence()
 	scoring := mock.NewMockScoring(mockCtrl)
 
 	// Assert
@@ -27,7 +27,7 @@ func TestGiveMeCommand_ForANewRound_PuzzleIsReturned(t *testing.T) {
 	nona := game.NewGame(response, persistence, acceptanceDictionary, scoring)
 	nona.NewRound(0)
 	nona.GiveMe(player)
-	persistence.playerStateResolved(player)
+	persistence.FakePlayerStateResolved(player)
 }
 
 func TestPuzzles_SolveFirstPuzzle_NextPuzzleIsDifferent(t *testing.T) {
@@ -38,7 +38,7 @@ func TestPuzzles_SolveFirstPuzzle_NextPuzzleIsDifferent(t *testing.T) {
 
 	player := game.Player("U1")
 	response := mock.NewMockResponse(mockCtrl)
-	persistence := newFakePersistence()
+	persistence := mock.NewFakePersistence()
 	scoring := mock.NewMockScoring(mockCtrl)
 
 	response.EXPECT().OnPuzzleNotification(player, &differentPuzzles)
@@ -48,12 +48,12 @@ func TestPuzzles_SolveFirstPuzzle_NextPuzzleIsDifferent(t *testing.T) {
 	nona := game.NewGame(response, persistence, acceptanceDictionary, scoring)
 	nona.NewRound(0)
 	nona.GiveMe(player)
-	persistence.playerStateResolved(player)
+	persistence.FakePlayerStateResolved(player)
 	correctWord := game.Word(oracle.FindASolutionFor(*differentPuzzles.puzzle))
 	nona.TryWord(player, correctWord)
-	persistence.playerStateResolved(player)
+	persistence.FakePlayerStateResolved(player)
 	nona.GiveMe(player)
-	persistence.playerStateResolved(player)
+	persistence.FakePlayerStateResolved(player)
 }
 
 func TestPuzzles_TryIncorrectSolution_CurrentPuzzleIsUnchanged(t *testing.T) {
@@ -64,7 +64,7 @@ func TestPuzzles_TryIncorrectSolution_CurrentPuzzleIsUnchanged(t *testing.T) {
 
 	player := game.Player("U1")
 	response := mock.NewMockResponse(mockCtrl)
-	persistence := newFakePersistence()
+	persistence := mock.NewFakePersistence()
 	scoring := mock.NewMockScoring(mockCtrl)
 
 	response.EXPECT().OnPuzzleNotification(player, &puzzleIsUnchanged)
@@ -75,12 +75,12 @@ func TestPuzzles_TryIncorrectSolution_CurrentPuzzleIsUnchanged(t *testing.T) {
 	nona := game.NewGame(response, persistence, acceptanceDictionary, scoring)
 	nona.NewRound(0)
 	nona.GiveMe(player)
-	persistence.playerStateResolved(player)
+	persistence.FakePlayerStateResolved(player)
 	incorrectWord := game.Word("THISISNOTAWORD")
 	nona.TryWord(player, incorrectWord)
-	persistence.playerStateResolved(player)
+	persistence.FakePlayerStateResolved(player)
 	nona.GiveMe(player)
-	persistence.playerStateResolved(player)
+	persistence.FakePlayerStateResolved(player)
 }
 
 func TestPuzzles_CorrectSolution_UserIsNotified(t *testing.T) {
@@ -90,7 +90,7 @@ func TestPuzzles_CorrectSolution_UserIsNotified(t *testing.T) {
 	puzzleMatch := puzzleSaver{}
 	player := game.Player("U1")
 	response := mock.NewMockResponse(mockCtrl)
-	persistence := newFakePersistence()
+	persistence := mock.NewFakePersistence()
 	scoring := mock.NewMockScoring(mockCtrl)
 
 	response.EXPECT().OnPuzzleNotification(player, &puzzleMatch)
@@ -98,13 +98,13 @@ func TestPuzzles_CorrectSolution_UserIsNotified(t *testing.T) {
 	nona := game.NewGame(response, persistence, acceptanceDictionary, scoring)
 	nona.NewRound(0)
 	nona.GiveMe(player)
-	persistence.playerStateResolved(player)
+	persistence.FakePlayerStateResolved(player)
 	correctWord := game.Word(oracle.FindASolutionFor(*puzzleMatch.puzzle))
 
 	response.EXPECT().OnCorrectWord(player, correctWord)
 
 	nona.TryWord(player, correctWord)
-	persistence.playerStateResolved(player)
+	persistence.FakePlayerStateResolved(player)
 }
 
 func TestPuzzles_CorrectSolutionButLowercase_UserIsNotified(t *testing.T) {
@@ -114,7 +114,7 @@ func TestPuzzles_CorrectSolutionButLowercase_UserIsNotified(t *testing.T) {
 	puzzleMatch := puzzleSaver{}
 	player := game.Player("U1")
 	response := mock.NewMockResponse(mockCtrl)
-	persistence := newFakePersistence()
+	persistence := mock.NewFakePersistence()
 	scoring := mock.NewMockScoring(mockCtrl)
 
 	response.EXPECT().OnPuzzleNotification(player, &puzzleMatch)
@@ -122,13 +122,13 @@ func TestPuzzles_CorrectSolutionButLowercase_UserIsNotified(t *testing.T) {
 	nona := game.NewGame(response, persistence, acceptanceDictionary, scoring)
 	nona.NewRound(0)
 	nona.GiveMe(player)
-	persistence.playerStateResolved(player)
+	persistence.FakePlayerStateResolved(player)
 	correctWord := game.Word(strings.ToLower(oracle.FindASolutionFor(*puzzleMatch.puzzle)))
 
 	response.EXPECT().OnCorrectWord(player, gomock.Any())
 
 	nona.TryWord(player, correctWord)
-	persistence.playerStateResolved(player)
+	persistence.FakePlayerStateResolved(player)
 }
 
 func TestPuzzles_IncorrectSolution_UserIsToldItIsIncorrect(t *testing.T) {
@@ -140,7 +140,7 @@ func TestPuzzles_IncorrectSolution_UserIsToldItIsIncorrect(t *testing.T) {
 	incorrectWord := game.Word("THISISNOTAWORD")
 
 	response := mock.NewMockResponse(mockCtrl)
-	persistence := newFakePersistence()
+	persistence := mock.NewFakePersistence()
 	scoring := mock.NewMockScoring(mockCtrl)
 
 	response.EXPECT().OnPuzzleNotification(player, gomock.Any())
@@ -151,11 +151,11 @@ func TestPuzzles_IncorrectSolution_UserIsToldItIsIncorrect(t *testing.T) {
 	nona := game.NewGame(response, persistence, acceptanceDictionary, scoring)
 	nona.NewRound(0)
 	nona.GiveMe(player)
-	persistence.playerStateResolved(player)
+	persistence.FakePlayerStateResolved(player)
 
 	// Act
 	nona.TryWord(player, incorrectWord)
-	persistence.playerStateResolved(player)
+	persistence.FakePlayerStateResolved(player)
 }
 
 func TestPuzzles_TryPuzzleAsSolutionInLowercase_NoMismatchingLetters(t *testing.T) {
@@ -167,7 +167,7 @@ func TestPuzzles_TryPuzzleAsSolutionInLowercase_NoMismatchingLetters(t *testing.
 
 	puzzleMatch := puzzleSaver{}
 	response := mock.NewMockResponse(mockCtrl)
-	persistence := newFakePersistence()
+	persistence := mock.NewFakePersistence()
 	scoring := mock.NewMockScoring(mockCtrl)
 
 	response.EXPECT().OnPuzzleNotification(player, &puzzleMatch)
@@ -182,14 +182,14 @@ func TestPuzzles_TryPuzzleAsSolutionInLowercase_NoMismatchingLetters(t *testing.
 	nona := game.NewGame(response, persistence, acceptanceDictionary, scoring)
 	nona.NewRound(0)
 	nona.GiveMe(player)
-	persistence.playerStateResolved(player)
+	persistence.FakePlayerStateResolved(player)
 
 	// Here the player has been notified of the puzzle.
 	lowercaseSameAsPuzzle := game.Word(strings.ToLower(string(*puzzleMatch.puzzle)))
 
 	// Act
 	nona.TryWord(player, lowercaseSameAsPuzzle)
-	persistence.playerStateResolved(player)
+	persistence.FakePlayerStateResolved(player)
 }
 
 func TestTwoPlayers_FirstPuzzle_SameForBothPlayers(t *testing.T) {
@@ -201,7 +201,7 @@ func TestTwoPlayers_FirstPuzzle_SameForBothPlayers(t *testing.T) {
 	player1 := game.Player("U1")
 	player2 := game.Player("U2")
 	response := mock.NewMockResponse(mockCtrl)
-	persistence := newFakePersistence()
+	persistence := mock.NewFakePersistence()
 	scoring := mock.NewMockScoring(mockCtrl)
 
 	response.EXPECT().OnPuzzleNotification(player1, &firstPuzzleIsTheSame)
@@ -210,9 +210,9 @@ func TestTwoPlayers_FirstPuzzle_SameForBothPlayers(t *testing.T) {
 	nona := game.NewGame(response, persistence, acceptanceDictionary, scoring)
 	nona.NewRound(0)
 	nona.GiveMe(player1)
-	persistence.playerStateResolved(player1)
+	persistence.FakePlayerStateResolved(player1)
 	nona.GiveMe(player2)
-	persistence.playerStateResolved(player2)
+	persistence.FakePlayerStateResolved(player2)
 }
 
 func TestTwoPlayers_FirstPlayerSolvesIt_SecondPlayersPuzzleIsUnchanged(t *testing.T) {
@@ -226,7 +226,7 @@ func TestTwoPlayers_FirstPlayerSolvesIt_SecondPlayersPuzzleIsUnchanged(t *testin
 	player1 := game.Player("U1")
 	player2 := game.Player("U2")
 	response := mock.NewMockResponse(mockCtrl)
-	persistence := newFakePersistence()
+	persistence := mock.NewFakePersistence()
 	scoring := mock.NewMockScoring(mockCtrl)
 
 	response.EXPECT().OnPuzzleNotification(player1, &player1Puzzle)
@@ -238,17 +238,17 @@ func TestTwoPlayers_FirstPlayerSolvesIt_SecondPlayersPuzzleIsUnchanged(t *testin
 	nona := game.NewGame(response, persistence, acceptanceDictionary, scoring)
 	nona.NewRound(0)
 	nona.GiveMe(player1)
-	persistence.playerStateResolved(player1)
+	persistence.FakePlayerStateResolved(player1)
 	nona.GiveMe(player2)
-	persistence.playerStateResolved(player2)
+	persistence.FakePlayerStateResolved(player2)
 	correctWord := game.Word(oracle.FindASolutionFor(*player1Puzzle.puzzle))
 	nona.TryWord(player1, correctWord)
-	persistence.playerStateResolved(player1)
+	persistence.FakePlayerStateResolved(player1)
 
 	// Act
 	// Here player1 has solved the first puzzle, but player2's puzzle should still be the first one.
 	nona.GiveMe(player2)
-	persistence.playerStateResolved(player2)
+	persistence.FakePlayerStateResolved(player2)
 }
 
 func TestPuzzles_WordAndPuzzleMismatch_UserIsToldWhatLettersMismatched(t *testing.T) {
@@ -261,7 +261,7 @@ func TestPuzzles_WordAndPuzzleMismatch_UserIsToldWhatLettersMismatched(t *testin
 	savedPuzzle := puzzleSaver{}
 
 	response := mock.NewMockResponse(mockCtrl)
-	persistence := newFakePersistence()
+	persistence := mock.NewFakePersistence()
 	scoring := mock.NewMockScoring(mockCtrl)
 
 	response.EXPECT().OnPuzzleNotification(player, &savedPuzzle)
@@ -271,7 +271,7 @@ func TestPuzzles_WordAndPuzzleMismatch_UserIsToldWhatLettersMismatched(t *testin
 	nona := game.NewGame(response, persistence, acceptanceDictionary, scoring)
 	nona.NewRound(0)
 	nona.GiveMe(player)
-	persistence.playerStateResolved(player)
+	persistence.FakePlayerStateResolved(player)
 	// Here the player should have been notified of the puzzle.
 	// Calculate the difference between puzzle and word.
 	tooMany, tooFew := game.Diff(string(word), string(*savedPuzzle.puzzle))
@@ -279,7 +279,7 @@ func TestPuzzles_WordAndPuzzleMismatch_UserIsToldWhatLettersMismatched(t *testin
 
 	// Act
 	nona.TryWord(player, word)
-	persistence.playerStateResolved(player)
+	persistence.FakePlayerStateResolved(player)
 }
 
 //
@@ -291,7 +291,7 @@ func TestNoRoundSet_GiveMeCommand_ErrorResponse(t *testing.T) {
 
 	player := game.Player("U1")
 	response := mock.NewMockResponse(mockCtrl)
-	persistence := newFakePersistence()
+	persistence := mock.NewFakePersistence()
 	scoring := mock.NewMockScoring(mockCtrl)
 
 	// Assert
@@ -308,7 +308,7 @@ func TestNoRoundSet_CheckSolution_ErrorResponse(t *testing.T) {
 
 	player := game.Player("U1")
 	response := mock.NewMockResponse(mockCtrl)
-	persistence := newFakePersistence()
+	persistence := mock.NewFakePersistence()
 	scoring := mock.NewMockScoring(mockCtrl)
 
 	// Assert
@@ -326,7 +326,7 @@ func TestRoundIsRecovered_GiveMeCommand_PuzzleReturned(t *testing.T) {
 	seed := int64(42)
 	player := game.Player("U1")
 	response := mock.NewMockResponse(mockCtrl)
-	persistence := newFakePersistence()
+	persistence := mock.NewFakePersistence()
 	scoring := mock.NewMockScoring(mockCtrl)
 
 	// Assert
@@ -335,7 +335,7 @@ func TestRoundIsRecovered_GiveMeCommand_PuzzleReturned(t *testing.T) {
 	nona := game.NewGame(response, persistence, acceptanceDictionary, scoring)
 	nona.OnRoundRecovered(seed)
 	nona.GiveMe(player)
-	persistence.playerStateResolved(player)
+	persistence.FakePlayerStateResolved(player)
 }
 
 //
