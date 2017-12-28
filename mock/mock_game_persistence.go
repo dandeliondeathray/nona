@@ -43,6 +43,16 @@ func (mr *MockPersistenceMockRecorder) PlayerSolvedPuzzle(arg0, arg1 interface{}
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PlayerSolvedPuzzle", reflect.TypeOf((*MockPersistence)(nil).PlayerSolvedPuzzle), arg0, arg1)
 }
 
+// ResolveAllPlayerStates mocks base method
+func (m *MockPersistence) ResolveAllPlayerStates(arg0 game.AllPlayerStatesResolution) {
+	m.ctrl.Call(m, "ResolveAllPlayerStates", arg0)
+}
+
+// ResolveAllPlayerStates indicates an expected call of ResolveAllPlayerStates
+func (mr *MockPersistenceMockRecorder) ResolveAllPlayerStates(arg0 interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ResolveAllPlayerStates", reflect.TypeOf((*MockPersistence)(nil).ResolveAllPlayerStates), arg0)
+}
+
 // ResolvePlayerState mocks base method
 func (m *MockPersistence) ResolvePlayerState(arg0 game.Player, arg1 game.PlayerStateResolution) {
 	m.ctrl.Call(m, "ResolvePlayerState", arg0, arg1)

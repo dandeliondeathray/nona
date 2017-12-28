@@ -46,6 +46,10 @@ func (p *Persistence) ResolvePlayerState(player game.Player, resolution game.Pla
 	go f()
 }
 
+func (p *Persistence) ResolveAllPlayerStates(resolution game.AllPlayerStatesResolution) {
+
+}
+
 func (p *Persistence) PlayerSolvedPuzzle(player game.Player, newPuzzleIndex int) {
 	f := func() {
 		err := p.setPlayerState(player, newPuzzleIndex)

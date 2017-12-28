@@ -11,4 +11,11 @@ type Response interface {
 	OnCorrectWord(player Player, word Word)
 	OnIncorrectWord(player Player, word Word, tooMany, tooFew string)
 	OnNoRound(player Player)
+	OnPerPlayerScores(scoringName string, scores []PerPlayerScore)
+}
+
+// PerPlayerScore collects a player identifier and the player's score.
+type PerPlayerScore struct {
+	Player Player
+	Score  float64
 }

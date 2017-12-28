@@ -2,6 +2,7 @@ package slack
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/dandeliondeathray/nona/game"
 )
@@ -42,4 +43,8 @@ func (r *SlackResponse) OnIncorrectWord(player game.Player, word game.Word, tooM
 
 func (r *SlackResponse) OnNoRound(player game.Player) {
 	r.ChOutgoing <- OutgoingMessage{player, "No round has been started."}
+}
+
+func (r *SlackResponse) OnPerPlayerScores(scoringName string, scores []game.PerPlayerScore) {
+	log.Printf("%s: %v", scoringName, scores)
 }
