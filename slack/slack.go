@@ -96,7 +96,7 @@ func RunSlack(token string, nona *game.Game, chOutgoing <-chan OutgoingMessage, 
 			}
 			channels.setReplyChannel(player, msgEvent.Channel)
 			messageText := msgEvent.Text
-			if msgEvent.Edited != nil && msgEvent.SubMessage != nil {
+			if msgEvent.SubType == "message_changed" && msgEvent.SubMessage != nil {
 				messageText = msgEvent.SubMessage.Text
 			}
 			handler.OnMessage(player, messageText)
