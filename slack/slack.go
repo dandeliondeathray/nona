@@ -95,7 +95,11 @@ func RunSlack(token string, nona *game.Game, chOutgoing <-chan OutgoingMessage, 
 				continue
 			}
 			channels.setReplyChannel(player, msgEvent.Channel)
-			handler.OnMessage(player, msgEvent.Text)
+			messageText := msgEvent.Text
+			if msgEvent.Edited != nil && msgEvent.SubMessage != nil {
+				messageText = msgEvent.SubMessage.Text
+			}
+			handler.OnMessage(player, messageText)
 
 		case *slack.PresenceChangeEvent:
 			log.Printf("Presence Change: %v\n", ev)
