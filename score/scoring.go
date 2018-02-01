@@ -33,7 +33,7 @@ func (s *simpleScore) AllPlayerStatesResolved(states map[game.Player]game.Player
 	for player, state := range states {
 		scores[i] = game.PerPlayerScore{
 			Player: player,
-			Score:  float64(state.PuzzleIndex)}
+			Score:  float64(state.PuzzleIndex - 2*state.Skipped)}
 		i++
 	}
 
