@@ -37,9 +37,9 @@ func (p *Persistence) StoreNewRound(seed int64) {
 
 func (p *Persistence) ResolvePlayerState(player game.Player, resolution game.PlayerStateResolution) {
 	f := func() {
-		playerState, err := p.getPlayerState(player)
+		playerState, skipped, err := p.getPlayerState(player)
 		if err == nil {
-			resolution.PlayerStateResolved(game.PlayerState{PuzzleIndex: playerState})
+			resolution.PlayerStateResolved(game.PlayerState{PuzzleIndex: playerState, Skipped: skipped})
 		} else {
 			log.Println("Error when getting player state: ", err)
 		}
@@ -69,8 +69,14 @@ func (p *Persistence) PlayerSolvedPuzzle(player game.Player, newPuzzleIndex int)
 	go f()
 }
 
-func (p *Persistence) PlayerSkippedPuzzle(player game.Player, newPuzzleIndex int) {
-
+func (p *Persistence) PlayerSkippedPuzzle(player game.Player, newPuzzleIndex int, skipped int) {
+	f := func() {
+		err := p.setPlayerStateWithSkipped(player, newPuzzleIndex, skipped)
+		if err != nil {
+			log.Println("Error when getting player state: ", err)
+		}
+	}
+	go f()
 }
 
 func (p *Persistence) Recover(handler RecoveryHandler, done chan<- bool) {
@@ -141,30 +147,41 @@ func (p *Persistence) setCurrentRound(seed int64) error {
 	return nil
 }
 
-func (p *Persistence) getPlayerState(player game.Player) (int, error) {
+func (p *Persistence) getPlayerState(player game.Player) (int, int, error) {
 	cli, err := p.getClient()
 	if err != nil {
-		return 0, err
+		return 0, 0, err
 	}
 	defer cli.Close()
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(1)*time.Second)
 	kvc := clientv3.NewKV(cli)
 	resp, err := kvc.Get(ctx, fmt.Sprintf("%s/%d/index/%s", p.team, p.seed, player))
+	respSkipped, err := kvc.Get(ctx, fmt.Sprintf("%s/%d/skipped/%s", p.team, p.seed, player))
 	cancel()
 	if err != nil {
-		return 0, err
+		return 0, 0, err
 	}
 	// use the response
 	log.Printf("Player state Response is: %v", resp)
+	log.Printf("Player state skipped Response is: %v", respSkipped)
 	if len(resp.Kvs) == 0 {
-		return 0, nil
+		return 0, 0, nil
 	}
 	index, err := strconv.Atoi(string(resp.Kvs[0].Value))
 	if err != nil {
-		return 0, err
+		return 0, 0, err
 	}
-	return index, nil
+
+	skipped := 0
+	if len(respSkipped.Kvs) != 0 {
+		skipped, err = strconv.Atoi(string(respSkipped.Kvs[0].Value))
+		if err != nil {
+			return 0, 0, err
+		}
+	}
+
+	return index, skipped, nil
 }
 
 func (p *Persistence) setPlayerState(player game.Player, index int) error {
@@ -186,6 +203,27 @@ func (p *Persistence) setPlayerState(player game.Player, index int) error {
 	return nil
 }
 
+func (p *Persistence) setPlayerStateWithSkipped(player game.Player, index int, skipped int) error {
+	cli, err := p.getClient()
+	if err != nil {
+		return err
+	}
+	defer cli.Close()
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(1)*time.Second)
+	kvc := clientv3.NewKV(cli)
+	resp, err := kvc.Put(ctx, fmt.Sprintf("%s/%d/index/%s", p.team, p.seed, player), fmt.Sprintf("%d", index))
+	respSkipped, err := kvc.Put(ctx, fmt.Sprintf("%s/%d/skipped/%s", p.team, p.seed, player), fmt.Sprintf("%d", skipped))
+	cancel()
+	if err != nil {
+		return err
+	}
+	// use the response
+	log.Printf("Put Response is: %v", resp)
+	log.Printf("Put Skipped Response is: %v", respSkipped)
+	return nil
+}
+
 func (p *Persistence) getAllPlayerStates() (map[game.Player]game.PlayerState, error) {
 	cli, err := p.getClient()
 	if err != nil {
@@ -195,7 +233,7 @@ func (p *Persistence) getAllPlayerStates() (map[game.Player]game.PlayerState, er
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(1)*time.Second)
 	kvc := clientv3.NewKV(cli)
-	resp, err := kvc.Get(ctx, fmt.Sprintf("%s/%d/index", p.team, p.seed), clientv3.WithPrefix())
+	resp, err := kvc.Get(ctx, fmt.Sprintf("%s/%d/", p.team, p.seed), clientv3.WithPrefix())
 	cancel()
 	if err != nil {
 		return nil, err
@@ -208,17 +246,36 @@ func (p *Persistence) getAllPlayerStates() (map[game.Player]game.PlayerState, er
 
 	result := make(map[game.Player]game.PlayerState)
 	for _, kv := range resp.Kvs {
-		player, err := playerFromIndexKey(string(kv.Key))
+		isIndex, err := isIndexKey(string(kv.Key))
 		if err == nil {
-			index, err := strconv.Atoi(string(kv.Value))
-			if err == nil {
-				result[player] = game.PlayerState{PuzzleIndex: index}
-			} else {
-				log.Printf("getAllPlayerStates: Player %s: Could not parse puzzle index: %s", player, string(kv.Value))
+			player, err := playerFromIndexKey(string(kv.Key))
+			_, ok := result[player]
+			if !ok {
+				result[player] = game.PlayerState{PuzzleIndex: 0, Skipped: 0}
 			}
-
-		} else {
-			log.Printf("getAllPlayerStates: %v", err)
+			if err == nil {
+				if isIndex {
+					index, err := strconv.Atoi(string(kv.Value))
+					if err == nil {
+						currentState := result[player]
+						currentState.PuzzleIndex = index
+						result[player] = currentState
+					} else {
+						log.Printf("getAllPlayerStates: Player %s: Could not parse puzzle index: %s", player, string(kv.Value))
+					}
+				} else {
+					skipped, err := strconv.Atoi(string(kv.Value))
+					if err == nil {
+						currentState := result[player]
+						currentState.Skipped = skipped
+						result[player] = currentState
+					} else {
+						log.Printf("getAllPlayerStates: Player %s: Could not parse puzzles skipped: %s", player, string(kv.Value))
+					}
+				}
+			} else {
+				log.Printf("getAllPlayerStates: %v", err)
+			}
 		}
 	}
 	return result, nil
@@ -233,8 +290,13 @@ func playerFromIndexKey(key string) (game.Player, error) {
 	if len(tokens) != 4 {
 		return game.Player(""), fmt.Errorf("Expected key on form team/seed/index/player, but got wrong number of tokens %v", tokens)
 	}
-	if tokens[2] != "index" {
-		return game.Player(""), fmt.Errorf("Expected key on form team/seed/index/player, but didn't get index in right place with tokens %v", tokens)
-	}
 	return game.Player(tokens[3]), nil
+}
+
+func isIndexKey(key string) (bool, error) {
+	tokens := strings.Split(key, "/")
+	if len(tokens) != 4 {
+		return true, fmt.Errorf("Expected key on form team/seed/index/player, but got wrong number of tokens %v", tokens)
+	}
+	return tokens[2] == "index", nil
 }

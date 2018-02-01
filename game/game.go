@@ -166,5 +166,5 @@ type skipPuzzle struct {
 }
 
 func (s *skipPuzzle) PlayerStateResolved(playerState PlayerState) {
-	s.persistence.PlayerSkippedPuzzle(s.player, playerState.PuzzleIndex+1)
+	s.persistence.PlayerSkippedPuzzle(s.player, playerState.PuzzleIndex+1, playerState.Skipped+1)
 }

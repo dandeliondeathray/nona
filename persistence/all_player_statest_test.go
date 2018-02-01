@@ -30,7 +30,7 @@ func TestAllPlayerStatePersistence_OnePlayerAtIndex17_OnlyThatPlayerReturned(t *
 		t.Fatalf("%v", err)
 	}
 
-	checkPlayerState(t, playerStates, player, puzzleIndex)
+	checkPlayerState(t, playerStates, player, puzzleIndex, 0)
 }
 
 func TestAllPlayerStatePersistence_TwoPlayers_BothPlayersReturned(t *testing.T) {
@@ -57,15 +57,48 @@ func TestAllPlayerStatePersistence_TwoPlayers_BothPlayersReturned(t *testing.T) 
 		t.Fatalf("%v", err)
 	}
 
-	checkPlayerState(t, playerStates, player1, puzzleIndex1)
-	checkPlayerState(t, playerStates, player2, puzzleIndex2)
+	checkPlayerState(t, playerStates, player1, puzzleIndex1, 0)
+	checkPlayerState(t, playerStates, player2, puzzleIndex2, 0)
+}
+
+func TestAllPlayerStatePersistence_OnePlayerSkippedTwice_BothPlayersReturned(t *testing.T) {
+	if testing.Short() {
+		return
+	}
+
+	resolution := newAsyncAllPlayerStatesResolution()
+	player1 := game.Player("U1")
+	puzzleIndex1 := 17
+	player2 := game.Player("U2")
+	puzzleIndex2 := 42
+
+	p := persistence.NewPersistence("konsulatet2", testingEndpoints)
+	p.PlayerSolvedPuzzle(player1, puzzleIndex1)
+	p.PlayerSolvedPuzzle(player2, puzzleIndex2)
+
+	p.PlayerSkippedPuzzle(player1, puzzleIndex1, 1)
+	time.Sleep(time.Duration(1) * time.Second)
+	p.PlayerSkippedPuzzle(player1, puzzleIndex1, 2)
+
+	time.Sleep(time.Duration(1) * time.Second)
+
+	// Act
+	p.ResolveAllPlayerStates(resolution)
+
+	playerStates, err := resolution.AwaitPlayerStates()
+	if err != nil {
+		t.Fatalf("%v", err)
+	}
+
+	checkPlayerState(t, playerStates, player1, puzzleIndex1, 2)
+	checkPlayerState(t, playerStates, player2, puzzleIndex2, 0)
 }
 
 //
 // Test helpers
 //
 
-func checkPlayerState(t *testing.T, playerStates map[game.Player]game.PlayerState, player game.Player, index int) {
+func checkPlayerState(t *testing.T, playerStates map[game.Player]game.PlayerState, player game.Player, index int, skipped int) {
 	actualState, ok := playerStates[player]
 	if !ok {
 		t.Fatalf("Player %s was not present in the resolved player states", player)
@@ -73,6 +106,10 @@ func checkPlayerState(t *testing.T, playerStates map[game.Player]game.PlayerStat
 
 	if actualState.PuzzleIndex != index {
 		t.Fatalf("Player %s: Expected puzzle index %d, but got %d", player, index, actualState.PuzzleIndex)
+	}
+
+	if actualState.Skipped != skipped {
+		t.Fatalf("Player %s: Expected puzzles skipped %d, but got %d", player, skipped, actualState.Skipped)
 	}
 }
 

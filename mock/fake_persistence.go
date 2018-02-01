@@ -38,13 +38,13 @@ func (p *FakePersistence) PlayerSolvedPuzzle(player game.Player, newPuzzleIndex 
 	p.states[player] = state
 }
 
-func (p *FakePersistence) PlayerSkippedPuzzle(player game.Player, newPuzzleIndex int) {
+func (p *FakePersistence) PlayerSkippedPuzzle(player game.Player, newPuzzleIndex int, skipped int) {
 	state, ok := p.states[player]
 	if !ok {
 		panic(fmt.Sprintf("Player %s solved the puzzle, and the new state is %d, but no such state was found", player, newPuzzleIndex))
 	}
 	state.PuzzleIndex = newPuzzleIndex
-	state.Skipped++
+	state.Skipped = skipped
 	p.states[player] = state
 }
 

@@ -142,27 +142,109 @@ func TestRecoverRound_PlayerWasAtIndex17_PlayerIsRecoveredAtIndex17(t *testing.T
 	}
 }
 
+//
+// Skip puzzles
+//
+
+func TestPersistPlayerState_NewPlayer_ZeroPuzzlesSkipped(t *testing.T) {
+	if testing.Short() {
+		return
+	}
+
+	resolution := newAsyncPlayerStateResolution()
+	player := game.Player("UNEWPLAYER")
+
+	p := persistence.NewPersistence("konsulatet", testingEndpoints)
+	p.ResolvePlayerState(player, resolution)
+
+	err := resolution.AwaitPuzzlesSkipped(0)
+	if err != nil {
+		t.Fatalf("%v", err)
+	}
+}
+
+func TestPersistPlayerState_PlayerSkipsOnePuzzle_ResolvingPlayerStateSkippedTo1(t *testing.T) {
+	if testing.Short() {
+		return
+	}
+
+	resolution := newAsyncPlayerStateResolution()
+	player := game.Player("U1")
+
+	p := persistence.NewPersistence("konsulatet", testingEndpoints)
+	p.PlayerSkippedPuzzle(player, 42, 1)
+	time.Sleep(time.Duration(1) * time.Second)
+
+	// Act
+	p.ResolvePlayerState(player, resolution)
+
+	err := resolution.AwaitPuzzlesSkipped(1)
+	if err != nil {
+		t.Fatalf("%v", err)
+	}
+}
+
+func TestPersistPlayerState_PlayerSkipsThreePuzzles_ResolvingPlayerStateSkippedTo3(t *testing.T) {
+	if testing.Short() {
+		return
+	}
+
+	resolution := newAsyncPlayerStateResolution()
+	player := game.Player("U1")
+
+	p := persistence.NewPersistence("konsulatet", testingEndpoints)
+	p.PlayerSkippedPuzzle(player, 42, 1)
+	time.Sleep(time.Duration(1) * time.Second)
+	p.PlayerSkippedPuzzle(player, 43, 2)
+	time.Sleep(time.Duration(1) * time.Second)
+	p.PlayerSkippedPuzzle(player, 44, 3)
+	time.Sleep(time.Duration(1) * time.Second)
+
+	// Act
+	p.ResolvePlayerState(player, resolution)
+
+	err := resolution.AwaitPuzzlesSkipped(3)
+	if err != nil {
+		t.Fatalf("%v", err)
+	}
+}
+
+//
 // asyncPlayerStateResolution lets us test that a player state is resolved by Persistence.
+//
+
 type asyncPlayerStateResolution struct {
-	chPuzzleIndex chan int
+	chPuzzleIndex chan game.PlayerState
 }
 
 func (p *asyncPlayerStateResolution) PlayerStateResolved(playerState game.PlayerState) {
-	p.chPuzzleIndex <- playerState.PuzzleIndex
+	p.chPuzzleIndex <- playerState
 }
 
 func newAsyncPlayerStateResolution() *asyncPlayerStateResolution {
-	return &asyncPlayerStateResolution{make(chan int, 10)}
+	return &asyncPlayerStateResolution{make(chan game.PlayerState, 10)}
 }
 
 func (p *asyncPlayerStateResolution) AwaitPuzzleIndex(expected int) error {
 	select {
-	case index := <-p.chPuzzleIndex:
-		if index != expected {
-			return fmt.Errorf("Got puzzle index %d, but expected %d", index, expected)
+	case playerState := <-p.chPuzzleIndex:
+		if playerState.PuzzleIndex != expected {
+			return fmt.Errorf("Got puzzle index %d, but expected %d", playerState.PuzzleIndex, expected)
 		}
 	case <-time.After(time.Duration(1) * time.Second):
 		return fmt.Errorf("No puzzle index received within 1 second.")
+	}
+	return nil
+}
+
+func (p *asyncPlayerStateResolution) AwaitPuzzlesSkipped(expected int) error {
+	select {
+	case playerState := <-p.chPuzzleIndex:
+		if playerState.Skipped != expected {
+			return fmt.Errorf("Got skipped %d, but expected %d", playerState.Skipped, expected)
+		}
+	case <-time.After(time.Duration(1) * time.Second):
+		return fmt.Errorf("No player state received within 1 second.")
 	}
 	return nil
 }
