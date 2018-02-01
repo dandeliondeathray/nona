@@ -404,3 +404,48 @@ func TestScoring_NewRoundWithNoActiveRound_NoScoresAreRequested(t *testing.T) {
 	nona := game.NewGame(response, persistence, acceptanceDictionary, scoring)
 	nona.NewRound(43)
 }
+
+//
+// Skipping puzzles
+//
+func TestPuzzles_SkipPuzzle_NextPuzzleIsDifferent(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	differentPuzzles := differentPuzzlesMatcher{}
+
+	player := game.Player("U1")
+	response := mock.NewMockResponse(mockCtrl)
+	persistence := mock.NewFakePersistence()
+	scoring := mock.NewMockScoring(mockCtrl)
+
+	response.EXPECT().OnPuzzleNotification(player, &differentPuzzles, gomock.Any())
+	response.EXPECT().OnPuzzleNotification(player, &differentPuzzles, gomock.Any())
+
+	nona := game.NewGame(response, persistence, acceptanceDictionary, scoring)
+	nona.NewRound(0)
+	nona.GiveMe(player)
+	persistence.FakePlayerStateResolved(player)
+	nona.SkipPuzzle(player)
+	persistence.FakePlayerStateResolved(player)
+	nona.GiveMe(player)
+	persistence.FakePlayerStateResolved(player)
+}
+
+func TestNoRoundSet_SkipPuzzle_ErrorResponse(t *testing.T) {
+	// Arrange
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	player := game.Player("U1")
+	response := mock.NewMockResponse(mockCtrl)
+	persistence := mock.NewFakePersistence()
+	scoring := mock.NewMockScoring(mockCtrl)
+
+	// Assert
+	response.EXPECT().OnNoRound(player)
+
+	// Act
+	nona := game.NewGame(response, persistence, acceptanceDictionary, scoring)
+	nona.SkipPuzzle(player)
+}

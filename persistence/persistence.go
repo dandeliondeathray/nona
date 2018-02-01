@@ -69,6 +69,10 @@ func (p *Persistence) PlayerSolvedPuzzle(player game.Player, newPuzzleIndex int)
 	go f()
 }
 
+func (p *Persistence) PlayerSkippedPuzzle(player game.Player, newPuzzleIndex int) {
+
+}
+
 func (p *Persistence) Recover(handler RecoveryHandler, done chan<- bool) {
 	f := func() {
 		log.Printf("Recovering round information for team %s", p.team)

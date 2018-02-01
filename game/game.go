@@ -70,6 +70,22 @@ func (g *Game) TryWord(player Player, word Word) {
 	g.persistence.ResolvePlayerState(player, &checkSolution)
 }
 
+// SkipPuzzle skips the current puzzle, with a score penalty.
+func (g *Game) SkipPuzzle(player Player) {
+	g.mutex.Lock()
+	defer g.mutex.Unlock()
+
+	if !g.isRoundActive() {
+		g.response.OnNoRound(player)
+		return
+	}
+
+	skip := skipPuzzle{
+		player:      player,
+		persistence: g.persistence}
+	g.persistence.ResolvePlayerState(player, &skip)
+}
+
 // OnRoundRecovered is called when the persistence has recovered the current round state.
 func (g *Game) OnRoundRecovered(seed int64) {
 	g.mutex.Lock()
@@ -99,11 +115,12 @@ func NewGame(response Response, persistence Persistence, dictionary []string, sc
 // PlayerState has all state for a given player.
 type PlayerState struct {
 	PuzzleIndex int
+	Skipped     int
 }
 
 // NewPlayerState creates a state for a player that just started playing.
 func NewPlayerState() PlayerState {
-	return PlayerState{PuzzleIndex: 0}
+	return PlayerState{PuzzleIndex: 0, Skipped: 0}
 }
 
 // puzzleNotification tells the player what the current puzzle is, when resolved by the database.
@@ -140,4 +157,14 @@ func (c *checkWord) PlayerStateResolved(playerState PlayerState) {
 		tooMany, tooFew := Diff(normalize(string(c.word)), string(puzzle))
 		c.response.OnIncorrectWord(c.player, c.word, tooMany, tooFew)
 	}
+}
+
+// skipPuzzle set the current puzzle to the next one
+type skipPuzzle struct {
+	player      Player
+	persistence Persistence
+}
+
+func (s *skipPuzzle) PlayerStateResolved(playerState PlayerState) {
+	s.persistence.PlayerSkippedPuzzle(s.player, playerState.PuzzleIndex+1)
 }

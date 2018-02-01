@@ -32,6 +32,16 @@ func (m *MockPersistence) EXPECT() *MockPersistenceMockRecorder {
 	return m.recorder
 }
 
+// PlayerSkippedPuzzle mocks base method
+func (m *MockPersistence) PlayerSkippedPuzzle(arg0 game.Player, arg1 int) {
+	m.ctrl.Call(m, "PlayerSkippedPuzzle", arg0, arg1)
+}
+
+// PlayerSkippedPuzzle indicates an expected call of PlayerSkippedPuzzle
+func (mr *MockPersistenceMockRecorder) PlayerSkippedPuzzle(arg0, arg1 interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PlayerSkippedPuzzle", reflect.TypeOf((*MockPersistence)(nil).PlayerSkippedPuzzle), arg0, arg1)
+}
+
 // PlayerSolvedPuzzle mocks base method
 func (m *MockPersistence) PlayerSolvedPuzzle(arg0 game.Player, arg1 int) {
 	m.ctrl.Call(m, "PlayerSolvedPuzzle", arg0, arg1)

@@ -18,5 +18,6 @@ type Persistence interface {
 	ResolvePlayerState(player Player, resolution PlayerStateResolution)
 	ResolveAllPlayerStates(resolution AllPlayerStatesResolution)
 	PlayerSolvedPuzzle(player Player, newPuzzleIndex int)
+	PlayerSkippedPuzzle(player Player, newPuzzleIndex int)
 	StoreNewRound(seed int64)
 }
