@@ -12,6 +12,7 @@ import (
 type Game interface {
 	GiveMe(player game.Player)
 	TryWord(player game.Player, word game.Word)
+	SkipPuzzle(player game.Player)
 }
 
 type NonaSlackHandler struct {
@@ -30,6 +31,8 @@ func (c *NonaSlackHandler) OnMessage(player game.Player, text string) {
 	trimmedText := strings.TrimSpace(text)
 	if trimmedText == "!gemig" || trimmedText == "!" || trimmedText == "! gemig" {
 		c.game.GiveMe(player)
+	} else if trimmedText == "!skippa" {
+		c.game.SkipPuzzle(player)
 	} else {
 		c.game.TryWord(player, game.Word(trimmedText))
 	}

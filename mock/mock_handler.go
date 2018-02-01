@@ -42,6 +42,16 @@ func (mr *MockGameMockRecorder) GiveMe(arg0 interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GiveMe", reflect.TypeOf((*MockGame)(nil).GiveMe), arg0)
 }
 
+// SkipPuzzle mocks base method
+func (m *MockGame) SkipPuzzle(arg0 game.Player) {
+	m.ctrl.Call(m, "SkipPuzzle", arg0)
+}
+
+// SkipPuzzle indicates an expected call of SkipPuzzle
+func (mr *MockGameMockRecorder) SkipPuzzle(arg0 interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SkipPuzzle", reflect.TypeOf((*MockGame)(nil).SkipPuzzle), arg0)
+}
+
 // TryWord mocks base method
 func (m *MockGame) TryWord(arg0 game.Player, arg1 game.Word) {
 	m.ctrl.Call(m, "TryWord", arg0, arg1)

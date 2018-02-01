@@ -42,6 +42,20 @@ func TestCommand_ASingleWord_CallTryWord(t *testing.T) {
 	handler.OnMessage(player, word)
 }
 
+func TestCommand_Skippa_SkipPuzzle(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	g := mock.NewMockGame(mockCtrl)
+	self := game.Player("USELF")
+	player := game.Player("U1")
+
+	g.EXPECT().SkipPuzzle(player)
+
+	handler := slack.NewNonaSlackHandler(g, self)
+	handler.OnMessage(player, "!skippa")
+}
+
 //
 // Trimming whitespace
 //
