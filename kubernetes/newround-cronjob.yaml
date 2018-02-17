@@ -1,0 +1,15 @@
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: nona-newround
+spec:
+  schedule: "0 8 * * 1"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: nona-newround
+            image: erikedin/nonactl
+            command: ["/nonactl",  "--url", "http://nona:8080", "newround"]
+          restartPolicy: OnFailure
